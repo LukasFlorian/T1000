@@ -8,9 +8,9 @@
 #let abstract = [test]
 
 #show: supercharged-dhbw.with(
-  title: "Bewertung von neuronalen Objektdetektionsmodellen zur Detektion von Menschen in Infrarotbildern",
+  title: "Evaluation of Neural Object Detection Models for Human Detection in Infrared Images",
   authors: (
-    (name: "Lukas Florian Richter", student-id: "8499549", course: "TIK24", course-of-studies: "Informatik - Künstliche Intelligenz", company: (
+    (name: "Lukas Florian Richter", student-id: "None", course: "TIK24", course-of-studies: "Computer Science - Artificial Intelligence", company: (
       (name: "Airbus Defence & Space", city: "Taufkirchen")
     )),
   ),
@@ -19,13 +19,13 @@
   bibliography: bibliography("sources.bib"),
   date: datetime.today(),
   glossary: glossary, // displays the glossary terms defined in the glossary dictionary
-  language: "de", // en, de
+  language: "en", // en, de
   supervisor: (company: "René Loeneke"),
-  university: "Dualen Hochschule Baden-Württemberg",
+  university: "Cooperative State University Baden-Württemberg",
   university-location: "Ravensburg Campus Friedrichshafen",
   university-short: "DHBW",
   // for more options check the package documentation (https://typst.app/universe/package/supercharged-dhbw),
-  type-of-thesis: "PROJEKTARBEIT T1000",
+  type-of-thesis: "PROJECT REPORT T1000",
   logo-right: image("./assets/AIRBUS_Blue.png"),
   //logo-left: image("./assets/DHBW_Logo.png"),
   logo-size-ratio: "2:1",
@@ -37,46 +37,67 @@
   ),
   time-to-complete: "16 Wochen",
   abstract: abstract,
+  show-confidentiality-statement: false,
 )
 
 
-// Edit this content to your liking
+// Table of Contents and Content Structure
 
-= Einleitung
+= Introduction
+Introduces the problem of human detection in thermal images and the importance of infrared surveillance systems for security applications. Outlines the thesis objectives and structure.
 
-#lorem(100)
+= Literature Review and Theoretical Background
+Reviews existing object detection methods, focusing on SSD architectures, and examines previous work on thermal image processing and human detection in infrared imagery.
 
-#lorem(100)
+== Object Detection Fundamentals
+Covers basic principles of computer vision and object detection, including traditional methods and deep learning approaches.
 
-#lorem(100)
+== Single Shot MultiBox Detector (SSD) Architecture
+Detailed explanation of SSD model architecture, inclusing backbone networks (VGG, ResNet) and detection mechanisms.
 
-= Theoretische Grundlagen
+== Thermal Image Processing
+Discusses characteristics of thermal images, preprocessing techniques (inversion, edge enhancement), and challenges specific to infrared imagery.
 
-#lorem(100)
+= Methodology
+Describes the experimental setup, datasets used, model configuraitons, and evaluation metrics employed in the study.
 
-= Hauptteil
+== Dataset Description
+Details the thermal image datasets (FLIR ADAS v2, AAU-PD-T, OSU-T, M3FD, KAIST-CVPR15) and their characteristics.
 
-#lorem(100)
+== Model Implementation
+Explains the implementation of SSD models with different backbones and preprocessing configurations.
 
-= Ergebnisse
+== Experimental Design
+Outlines the systematic approach to comparing model variants and the evaluation framework.
 
-#lorem(100)
+= Results and Analysis
+Presents comprehensive results from model training and evaluation, including performance comparisons across different configurations.
 
-= Diskussion
+== Training Performance
+Reports training loss curves, converegence behavior, and computational requirements for different mdoel variants.
 
-#lorem(100)
 
-= Einschränkungen
+== Detection Accuracy Analysis
+Provides detailed mAP scores and detection performance metrics for each model configuraiton and preprocessing technique.
 
-#lorem(100)
+== Preprocessing Impact Evaluation
+Analzyes the effects of image inversion and edge enhancement on detection performance.
 
-= Fazit und Ausblick
+= Discussion
+Interprets the results, discusses the practical implications for surveillance systems, adn addresses limitations of the current approach.
 
-#lorem(100)
+== Model Performance Comparison
+Compares SSD-VGG and SSD-ResNer performance and discusses trade-offs between accuracy and computational efficiency.
+
+== Practical Deployment Considerations
+Discuesses real-world application scenarios and system requirements for thermal surveillance.
+
+= Conclusion and Future Work
+Summarizes key findings, contributions to the field, and suggestst directions for future research in thermal image human detection.
 
 = Examples
 
-#lorem(30)
+Just a couple of examples to demonstrate proper use of the typst template and its functions.
 
 == Acronyms
 
@@ -169,9 +190,3 @@ You can also reference by adding `<ref>` with the desired name after figures or 
 For example this @table references the table on the previous page.
 
 = Conclusion
-
-#lorem(100)
-
-#lorem(120)
-
-#lorem(80)
