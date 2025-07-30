@@ -5,7 +5,11 @@
 #set par(spacing: 1.5em)
 #show list: set block(spacing: 1.5em)
 
-#let abstract = [test]
+#let abstract = [
+  This project report evaluates the performance of neural object detection models for detecting humans in infrared images. The study focuses on comparing different variations of the SSD (Single Shot Mutlibox Detector) model, assessing their accuracy and inference speed, and identifying the most suitable model for the given task. Additionally
+
+
+]
 
 #show: supercharged-dhbw.with(
   title: "Evaluation of Neural Object Detection Models for Human Detection in Infrared Images",
@@ -182,8 +186,9 @@ Insert code snippets like this:
 
 == References
 
-Cite like this #cite(form: "prose", <iso18004>).
-Or like this @iso18004.
+Cite like this #cite(form: "prose", <akshathaHumanDetectionAerial2022>).
+Or like this @farooqObjectDetectionThermal2021.
+
 
 You can also reference by adding `<ref>` with the desired name after figures or headings.
 
