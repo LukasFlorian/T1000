@@ -45,4 +45,5 @@
   TCP: "Transmission Control Protocol",
   OSI: "Open Systems Interconnection",
   HNM: "Hard-Negative Mining",
+  ViT: "Vision Transformer",
 )
