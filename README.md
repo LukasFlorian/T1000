@@ -4,7 +4,7 @@ This repository contains the work on the topic "Evaluation of Neural Object Dete
 
 **Author:** [Lukas Florian Richter](https://github.com/LukasFlorian), Airbus Defence & Space GmbH
 
-The conditions and formal requirements for this work are described in the [project description](). The work is divided into two practical phases, each with two competencies
+The conditions and formal requirements for this work are described in the [project description](dhbw_docs/thesis_guidelines.pdf). The work is divided into two practical phases, each with two competencies
 
 ## Preliminary Topic of the Work:
 For the purpose of video surveillance of company-owned grounds, a video surveillance system is to be developed. This system should be able to detect and report humans. Since the surveillance will take place outdoors, this work is limited to infrared images - the exact justification for this will follow in the work.  
