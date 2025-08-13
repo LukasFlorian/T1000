@@ -17,6 +17,7 @@ This repository contains the thesis work "Evaluation of Neural Object Detection 
 - **Bibliography**: `sources.bib` - BibTeX references for citations
 - **Acronyms**: `acronyms.typ` - Defines acronyms used throughout the document (API, HTTP, REST)
 - **Glossary**: `glossary.typ` - Technical terms and definitions (Vulnerability, Patch, Exploit)
+- **Exported PDFs**: `Exported PDFs/` - Full-text PDFs of all referenced papers from `sources.bib` for research and citation support
 
 ## Development Workflow
 

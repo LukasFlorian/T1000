@@ -46,4 +46,7 @@
   OSI: "Open Systems Interconnection",
   HNM: "Hard-Negative Mining",
   ViT: "Vision Transformer",
+  HOG: "Histogram of Oriented Gradients",
+  AdaBoost: "Adaptive Boosting",
+  SVM: "Support Vector Machine",
 )

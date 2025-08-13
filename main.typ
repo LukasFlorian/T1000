@@ -54,17 +54,44 @@
 
 = Introduction <intro>
 
-The increasing demand for automated surveillance systems in security-critical applications has driven significant advances in computer vision technologies. While conventional RGB-based surveillance systems remain prevalent, they face inherent limitations in challenging environmental conditions such as low-light scenarios, adverse weather, and nighttime operations. Thermal infrared imaging presents a compelling alternative, offering consistent detection capabilities independent of ambient lighting conditions and providing unique advantages for human detection through body heat signatures.
+With the increase in security threats to critical infrastructure, automated surveillance systems have become essential for ensuring the safety and security of people, infrastructure and property at scale. The ability to detect individuals on critical infrastructure premises is crucial to preventing unauthorized access and potential damage to assets. While conventional RGB-based surveillance systems remain prevalent in many application, they face inherent limitations in challenging scenarios such as low-light conditions, adverse weather, fog, smoke and complete darkness during nighttime @farooqObjectDetectionThermal2021.
 
-*Key areas to develop:*
-- Context: Growing need for reliable 24/7 surveillance systems
-- Problem: Limitations of RGB cameras in challenging conditions
-- Solution: Advantages of thermal imaging for human detection
-- Research gap: Need for optimized neural networks for thermal imagery
-- Project scope: Evaluation of SSD models for thermal human detection
-- Thesis structure: Overview of methodology and contributions
-- Industrial relevance: Partnership with Airbus Defence & Space
+A compelling alternative to systems operating in the visible light domain are such capturing wavelengths in the infrared spectrum and thus offering consistent detection capabilities that are fundamentally independent of ambient lighting conditions. Unlike regular RGB cameras, thermal sensors detect light with longer wavelengths that correspond to the heat signatures of emitted directly by objects. This characteristic provides unique advantages for human detection, as the human body maintains a relatively constant temperature of approximately 37°C, creating distinct thermal signatures that remain visible regardless of environmental illumination @akshathaHumanDetectionAerial2022.
 
+The integration of deep learning architectures with thermal imaging thus opens new possibilities for automated systems that can reliably detect humans in the aforementioned scenarios with adverse conditions for conventional RGB-based concepts. However, most state-of-the-art object detection models have been primarily developed for and trained on RGB imagery. Given that the spectral, tectural and contrast characteristics of infrared images differ substantially from visible-light imagery, both due to the properties of those wavelengths themselves and of the sensors, those existing models might need to be adapted to achieve optimal performance.
+
+//
+This research addresses the critical need for systematic evaluation of neural object detection models specifically tailored for thermal human detection applications. The study focuses on the #acr("SSD") architecture, a prominent one-stage detection framework known for its balance between accuracy and computational efficiency. By examining multiple model variants with different backbone networks (VGG16 and ResNet152), initialization strategies (pretrained versus scratch training), and thermal-specific preprocessing techniques (image inversion and edge enhancement), this work provides comprehensive insights into optimal configurations for infrared surveillance systems.
+
+This project addresses the need for systematic evaluation of neural object detection models and preprocessing techniques tailored for thermal human detection applications. For the purpose of developing and edge-deployable network, the focus of this study lies on the #acr("SSD") architecture, a prominent one-stage detection framework with relatively low complexity compared to newer architectures like the #acr("ViT").
+
+This work provides comprehensive insights into optimal configurations for infrared surveillance networks by examining multiple model variants with different:
++ *backbone networks* (#acr("VGG") and #acr("ResNet"))
++ *initialization strategies* (parameters pretrained on the RGB-Dataset IMAGENET1K_V2 versus randomly sampled)
++ *preprocessing techniques* (inversion of the image or enhancement of its edges)
+
+The practical significance of this research extends beyond academic interest, addressing real-world challenges faced by the security and defense industry. In partnership with Airbus Defence & Space, this project explores the development of cost-efficient, edge-deployable thermal surveillance solutions that can operate reliably in challenging environments where traditional RGB systems fail.
+
+== Research Objectives and Contributions
+
+This thesis makes several key contributions to the field of thermal image processing and computer vision:
+
++ *Preprocessing Technique Analysis*: Quantitative evaluation of thermal-specific image enhancement methods, including polarity inversion and edge enhancement, and their impact on detection accuracy.
+
++ *Backbone Network Comparison*: Detailed comparison between VGG16 and ResNet152 architectures in the context of thermal imagery, addressing the trade-offs between model complexity and performance.
+
++ *Practical Implementation Guidelines*: Development of actionable recommendations for deploying thermal surveillance systems in real-world environments, considering computational constraints and accuracy requirements.
+
++ *Dataset Integration Framework*: Unified evaluation approach across five diverse thermal datasets (FLIR ADAS v2, AAU-PD-T, OSU-T, M3FD, KAIST-CVPR15), enabling robust performance assessment.
+
+== Thesis Organization
+
+The remainder of this thesis is structured to provide a comprehensive examination of thermal human detection using neural networks. @literature presents a thorough review of object detection fundamentals, SSD architecture principles, and thermal image processing techniques, establishing the theoretical foundation for the experimental work. @methodology details the systematic approach employed for model evaluation, including dataset preparation, experimental design, and evaluation metrics. @results presents comprehensive performance analysis across all model configurations and preprocessing techniques. @discussion interprets the findings within the context of practical deployment scenarios and industrial requirements. Finally, @conclusion synthesizes the key contributions and outlines directions for future research in thermal surveillance technologies.
+
+
+/*
+This research represents a significant step toward practical implementation of AI-powered thermal surveillance systems, providing the empirical foundation necessary for informed decision-making in security-critical applications where reliable human detection is paramount.
+*/
 
 = Literature Review and Theoretical Background <literature>
 
@@ -80,12 +107,26 @@ The field of object detection has undergone significant evolution from tradition
 - Gap analysis: Limited research on SSD for thermal surveillance
 
 == Object Detection Fundamentals <obj-detection>
-Most object detection methods can be broadly categorized into two main approaches: traditional methods and deep learning-based methods. Traditional methods mainly rely on handcrafted features and sliding window techniques, while deep learning-based methods leverage convolutional neural networks (CNNs) or vision transformer (ViT) architectures to automatically learn features from data.
+Most object detection methods can be broadly categorized into two main approaches: traditional methods and deep learning-based methods. Traditional methods mainly rely on handcrafted features and sliding window techniques, while deep learning-based methods in this field leverage convolutional neural networks (CNNs) or vision transformer (ViT) architectures to automatically learn features from data.
 
 === Traditional Object Detection Methods <traditional-methods>
-Examines feature-based and sliding window techniques, such as Haar-like features and HOG descriptors.
+Simple approaches to object detection entail applying manually constructed feature detector kernels in a sliding window fashion to images. 
+
+An example of this is the *Viola-Jones-Algorithm* @violaRapidObjectDetection2001:
++ Compute the integral image of the input image, that is, the sum of pixel intensities from the top-left corner of the image to each pixel. This allows for quick computation of the sum of pixel intensities in any rectangle in the image by subtracting the value of the upper left pixel of the rectangle from that of the lower right pixel.
+
++ Apply a series of Haar-like features to detect potential objects. Haar-like features are computed by subtracting the sum of pixels in one rectangle from the sum of pixels in an adjacent rectangle. These features capture various simple patterns, such as edges and lines.
+
++ Use the #acr("AdaBoost") technique to build a cascaded strong classifier consisting of several weak classifiers that can detect simple patterns consisting of Haar-like features.
+
++ Split the image into subwindows and classify each subwindow using the cascaded classifier as either containing the object or not.
+
+Other approaches employ #acr("HOG") descriptors. The #acr("HOG") is attained by dividing the image into a grid of cells, contrast-normalizing them and then computing the vertical as well as horizontal gradients of their pixels. The gradients for each cell are accumulated in a one-dimensional histogram which serves as that cell's feature vector. After labeling the cells in the training data, a #acr("SVM") can be trained to find an optimal hyperplane separating the feature vectors corresponding to the object that should be detected from those that do not contain the object.
+
 === Deep Learning-Based Object Detection <deep-learning-detection>
 Discusses the evolution of deep learning models, including R-CNN, Fast R-CNN, Faster R-CNN, and YOLO, highlighting their strengths and limitations.
+
+However, those methods are highly dependent on engineering the correct priors, such as the Haar-like features, and 
 
 
 == Single Shot MultiBox Detector (SSD) Architecture <ssd-arch>
@@ -210,7 +251,7 @@ Use the `acr` function to insert acronyms, which looks like this #acr("HTTP").
 
 Use the `gls` function to insert glossary terms, which looks like this:
 
-A #gls("Vulnerability") is a weakness in a system that can be exploited.
+The #gls("Stochastic Gradient Descent") is an optimization algorithm used in Machine Learning.
 
 == Lists <list-examples>
 
@@ -288,5 +329,3 @@ Or like this @farooqObjectDetectionThermal2021.
 You can also reference by adding `<ref>` with the desired name after figures or headings.
 
 For example this @table references the table on the previous page.
-
-= Conclusion <final-conclusion>
