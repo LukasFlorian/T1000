@@ -6,3 +6,7 @@
   "Batch Gradient Descent": "Batch Gradient Descent is an optimization algorithm used to minimize the loss function in machine learning models by iteratively updating the model parameters based on their gradients with respect to the",
   "Stochastic Gradient Descent": "Stochastic Gradient Descent (SGD) is an optimization algorithm used to minimize the loss function in machine learning models by iteratively updating the model parameters based on their partial derivatives with ",
 )
+
+/*
+Tensor? Fully Connected/Linear? Attention? 
+*/

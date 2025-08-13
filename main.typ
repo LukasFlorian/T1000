@@ -65,10 +65,12 @@ This research addresses the critical need for systematic evaluation of neural ob
 
 This project addresses the need for systematic evaluation of neural object detection models and preprocessing techniques tailored for thermal human detection applications. For the purpose of developing and edge-deployable network, the focus of this study lies on the #acr("SSD") architecture, a prominent one-stage detection framework with relatively low complexity compared to newer architectures like the #acr("ViT").
 
+/*
 This work provides comprehensive insights into optimal configurations for infrared surveillance networks by examining multiple model variants with different:
 + *backbone networks* (#acr("VGG") and #acr("ResNet"))
 + *initialization strategies* (parameters pretrained on the RGB-Dataset IMAGENET1K_V2 versus randomly sampled)
 + *preprocessing techniques* (inversion of the image or enhancement of its edges)
+*/
 
 The practical significance of this research extends beyond academic interest, addressing real-world challenges faced by the security and defense industry. In partnership with Airbus Defence & Space, this project explores the development of cost-efficient, edge-deployable thermal surveillance solutions that can operate reliably in challenging environments where traditional RGB systems fail.
 
@@ -107,7 +109,7 @@ The field of object detection has undergone significant evolution from tradition
 - Gap analysis: Limited research on SSD for thermal surveillance
 
 == Object Detection Fundamentals <obj-detection>
-Most object detection methods can be broadly categorized into two main approaches: traditional methods and deep learning-based methods. Traditional methods mainly rely on handcrafted features and sliding window techniques, while deep learning-based methods in this field leverage convolutional neural networks (CNNs) or vision transformer (ViT) architectures to automatically learn features from data.
+Most object detection methods can be broadly categorized into two main approaches: traditional methods and deep learning-based methods. Traditional methods mainly rely on handcrafted features and sliding window techniques, while deep learning-based methods in this field leverage #acrpl("CNN") or #acr("ViT") architectures to automatically learn features from data.
 
 === Traditional Object Detection Methods <traditional-methods>
 Simple approaches to object detection entail applying manually constructed feature detector kernels in a sliding window fashion to images. 
@@ -121,13 +123,24 @@ An example of this is the *Viola-Jones-Algorithm* @violaRapidObjectDetection2001
 
 + Split the image into subwindows and classify each subwindow using the cascaded classifier as either containing the object or not.
 
-Other approaches employ #acr("HOG") descriptors. The #acr("HOG") is attained by dividing the image into a grid of cells, contrast-normalizing them and then computing the vertical as well as horizontal gradients of their pixels. The gradients for each cell are accumulated in a one-dimensional histogram which serves as that cell's feature vector. After labeling the cells in the training data, a #acr("SVM") can be trained to find an optimal hyperplane separating the feature vectors corresponding to the object that should be detected from those that do not contain the object.
+Other approaches employ #acr("HOG") descriptors. The #acrpl("HOG") are attained by dividing the image into a grid of cells, contrast-normalizing them and then computing the vertical as well as horizontal gradients of their pixels. The gradients for each cell are accumulated in a one-dimensional histogram which serves as that cell's feature vector. After labeling the cells in the training data, a #acr("SVM") can be trained to find an optimal hyperplane separating the feature vectors corresponding to the object that should be detected from those that do not contain the object.
 
 === Deep Learning-Based Object Detection <deep-learning-detection>
-Discusses the evolution of deep learning models, including R-CNN, Fast R-CNN, Faster R-CNN, and YOLO, highlighting their strengths and limitations.
+However, those methods are either highly dependent on engineeri ng the correct priors, such as the Haar-like features, or limited to binary classification scenarios, as is the case for #acr("HOG")-based #acrpl("SVM"). Thus, newer Object Detection methods employ more complex deep-learning architectures. The best-performing models nowadays are #acrpl("ViT") using Attention mechanisms @dosovitskiyImageWorth16x162021 to learn relationships between patterns in different parts of images. However, they will not be further examined in this thesis, due to computational constraints that make them unfeasible for the edge-deployable solution sought in this work @dosovitskiyImageWorth16x162021.
 
-However, those methods are highly dependent on engineering the correct priors, such as the Haar-like features, and 
+Relevant for this examination are their predecessors, #acrpl("CNN"). The main mechanism they use to extract information from images are convolutional layers. Those convolutional layers get passed the image in the form of a tensor and perform matrix multiplication on that input tensor and a kernel tensor in a sliding window fashion to compute subsequent feature maps that will then be passed on as input to the next layer @lecunHandwrittenDigitRecognition1989.
 
+At their core, these convolutional layers do not work inherently different from fully connected layers that compute several weighted sums across all components of the input tensor. More specifically, fully connected layers can be described as convolutional layers whose kernels have the same dimensions as the input tensor.
+
+Resorting to smaller kernels, however, is a prior that makes use of the heuristic that in most cases, the features that compose an object in an image lie closely together. Thus, it is not necessary to process the entire image to detect an object that occupies only part of it. Convolutional neural nets hence save computational resources by focusing on smaller regions. In many cases it is advantageous to use those savings to increase network depth in order to make it possible for the network to learn more complex high-level features in subsequent layers.
+
+
+
+
+- SSD rather than Faster R-CNN due to faster inference: @akshathaHumanDetectionAerial2022
+- SSD > YOLO because of edge-specific faster inference: @alqahtaniBenchmarkingDeepLearning2024
+
+// TODO: Incorporate switch to multi-label setup later
 
 == Single Shot MultiBox Detector (SSD) Architecture <ssd-arch>
 Detailed explanation of SSD model architecture, including backbone networks (VGG, ResNet) and detection mechanisms.
