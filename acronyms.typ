@@ -49,4 +49,5 @@
   HOG: "Histogram of Oriented Gradients",
   AdaBoost: "Adaptive Boosting",
   SVM: "Support Vector Machine",
+  VGP: "Vanishing Gradient Problem"
 )

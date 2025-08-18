@@ -56,14 +56,16 @@
 
 With the increase in security threats to critical infrastructure, automated surveillance systems have become essential for ensuring the safety and security of people, infrastructure and property at scale. The ability to detect individuals on critical infrastructure premises is crucial to preventing unauthorized access and potential damage to assets. While conventional RGB-based surveillance systems remain prevalent in many application, they face inherent limitations in challenging scenarios such as low-light conditions, adverse weather, fog, smoke and complete darkness during nighttime @farooqObjectDetectionThermal2021.
 
-A compelling alternative to systems operating in the visible light domain are such capturing wavelengths in the infrared spectrum and thus offering consistent detection capabilities that are fundamentally independent of ambient lighting conditions. Unlike regular RGB cameras, thermal sensors detect light with longer wavelengths that correspond to the heat signatures of emitted directly by objects. This characteristic provides unique advantages for human detection, as the human body maintains a relatively constant temperature of approximately 37°C, creating distinct thermal signatures that remain visible regardless of environmental illumination @akshathaHumanDetectionAerial2022.
+A compelling alternative to systems operating in the visible light domain are such capturing wavelengths in the infrared spectrum and thus offering consistent detection capabilities that are fundamentally independent of ambient lighting conditions. Unlike regular RGB cameras, thermal sensors detect light with longer wavelengths that correspond to the heat signatures emitted directly by objects. This characteristic provides unique advantages for human detection, as the human body maintains a relatively constant temperature of approximately 37°C, creating distinct thermal signatures that remain visible regardless of environmental illumination @akshathaHumanDetectionAerial2022.
 
 The integration of deep learning architectures with thermal imaging thus opens new possibilities for automated systems that can reliably detect humans in the aforementioned scenarios with adverse conditions for conventional RGB-based concepts. However, most state-of-the-art object detection models have been primarily developed for and trained on RGB imagery. Given that the spectral, tectural and contrast characteristics of infrared images differ substantially from visible-light imagery, both due to the properties of those wavelengths themselves and of the sensors, those existing models might need to be adapted to achieve optimal performance.
 
 //
 This research addresses the critical need for systematic evaluation of neural object detection models specifically tailored for thermal human detection applications. The study focuses on the #acr("SSD") architecture, a prominent one-stage detection framework known for its balance between accuracy and computational efficiency. By examining multiple model variants with different backbone networks (VGG16 and ResNet152), initialization strategies (pretrained versus scratch training), and thermal-specific preprocessing techniques (image inversion and edge enhancement), this work provides comprehensive insights into optimal configurations for infrared surveillance systems.
 
+/*
 This project addresses the need for systematic evaluation of neural object detection models and preprocessing techniques tailored for thermal human detection applications. For the purpose of developing and edge-deployable network, the focus of this study lies on the #acr("SSD") architecture, a prominent one-stage detection framework with relatively low complexity compared to newer architectures like the #acr("ViT").
+*/
 
 /*
 This work provides comprehensive insights into optimal configurations for infrared surveillance networks by examining multiple model variants with different:
@@ -84,7 +86,7 @@ This thesis makes several key contributions to the field of thermal image proces
 
 + *Practical Implementation Guidelines*: Development of actionable recommendations for deploying thermal surveillance systems in real-world environments, considering computational constraints and accuracy requirements.
 
-+ *Dataset Integration Framework*: Unified evaluation approach across five diverse thermal datasets (FLIR ADAS v2, AAU-PD-T, OSU-T, M3FD, KAIST-CVPR15), enabling robust performance assessment.
++ *Dataset Integration Framework*: Unified evaluation approach across five diverse thermal datasets (FLIR ADAS v2 @FREEFLIRThermal, AAU-PD-T @hudaEffectDiverseDataset2020, OSU-T @davisTwoStageTemplateApproach2005, M3FD @liuTargetawareDualAdversarial2022, KAIST-CVPR15 @hwangMultispectralPedestrianDetection2015), enabling robust performance assessment.
 
 == Thesis Organization
 
@@ -126,27 +128,58 @@ An example of this is the *Viola-Jones-Algorithm* @violaRapidObjectDetection2001
 Other approaches employ #acr("HOG") descriptors. The #acrpl("HOG") are attained by dividing the image into a grid of cells, contrast-normalizing them and then computing the vertical as well as horizontal gradients of their pixels. The gradients for each cell are accumulated in a one-dimensional histogram which serves as that cell's feature vector. After labeling the cells in the training data, a #acr("SVM") can be trained to find an optimal hyperplane separating the feature vectors corresponding to the object that should be detected from those that do not contain the object.
 
 === Deep Learning-Based Object Detection <deep-learning-detection>
-However, those methods are either highly dependent on engineeri ng the correct priors, such as the Haar-like features, or limited to binary classification scenarios, as is the case for #acr("HOG")-based #acrpl("SVM"). Thus, newer Object Detection methods employ more complex deep-learning architectures. The best-performing models nowadays are #acrpl("ViT") using Attention mechanisms @dosovitskiyImageWorth16x162021 to learn relationships between patterns in different parts of images. However, they will not be further examined in this thesis, due to computational constraints that make them unfeasible for the edge-deployable solution sought in this work @dosovitskiyImageWorth16x162021.
+However, those methods are either highly dependent on engineering the correct priors, such as the Haar-like features, or limited to binary classification scenarios, as is the case for #acr("HOG")-based #acrpl("SVM"). Thus, newer Object Detection methods employ more complex deep-learning architectures that require less manual feature engineering. The best-performing models nowadays are #acrpl("ViT") using Attention mechanisms @dosovitskiyImageWorth16x162021 to learn relationships between patterns in different parts of images. However, they will not be further examined in this thesis, due to computational constraints that make them unfeasible for the edge-deployable solution sought in this work @dosovitskiyImageWorth16x162021.
 
-Relevant for this examination are their predecessors, #acrpl("CNN"). The main mechanism they use to extract information from images are convolutional layers. Those convolutional layers get passed the image in the form of a tensor and perform matrix multiplication on that input tensor and a kernel tensor in a sliding window fashion to compute subsequent feature maps that will then be passed on as input to the next layer @lecunHandwrittenDigitRecognition1989.
+Relevant for this examination are their predecessors, #acrpl("CNN"). The main mechanism they use to extract information from images are convolutional layers. Those convolutional layers get passed an image in the form of a tensor and perform matrix multiplication on that input tensor and a kernel tensor in a sliding window fashion to compute subsequent feature maps. Those will be passed on as input to the next layer. @lecunHandwrittenDigitRecognition1989
 
-At their core, these convolutional layers do not work inherently different from fully connected layers that compute several weighted sums across all components of the input tensor. More specifically, fully connected layers can be described as convolutional layers whose kernels have the same dimensions as the input tensor.
+At their core, these convolutional layers do not work inherently different from fully connected layers that compute several weighted sums across all components of the input tensor. More specifically, fully connected layers can be described as convolutional layers whose kernel dimensions are identical to those of the input tensor.
 
-Resorting to smaller kernels, however, is a prior that makes use of the heuristic that in most cases, the features that compose an object in an image lie closely together. Thus, it is not necessary to process the entire image to detect an object that occupies only part of it. Convolutional neural nets hence save computational resources by focusing on smaller regions. In many cases it is advantageous to use those savings to increase network depth in order to make it possible for the network to learn more complex high-level features in subsequent layers.
+Resorting to smaller kernels, however, serves as a prior making use of the heuristic that in most cases, the features composing an object in an image lie closely together. Thus, it is not necessary to process the entire image to detect an object that occupies only part of it. Convolutional neural nets hence save computational resources by focusing on smaller regions. In many cases it is advantageous to use those savings to increase network depth in order to make it possible for the network to learn more complex high-level features in subsequent layers.
+
+Object detection, as opposed to image classification, consists of two main tasks: locating where an object is and classifying which class it belongs to. In the context of machine learning, that means two concepts must be used: regression to approximate the location of an object and classification to determine its class. #acrpl("CNN") solving these tasks can be categorized into two main categories:
+
+- *Two-Stage Detectors*: These detectors operate in two stages. The first stage proposes regions of interest and the second stage classifies which object they contain. In more detail, that means regressing bounding boxes and assessing the "objectness" of that region, for example by using logistic regression. If the confidence this region contains an object exceeds a given threshold, the second stage then classifies the object in that region. That requires a second pass of the extracted region through a classifier network. This two-stage approach can be computationally expensive, especially when dealing with a large number of proposals. Examples of two-stage detectors include #acrpl("R-CNN") @girshickRichFeatureHierarchies2014, Fast #acrpl("R-CNN") @girshickFastRCNN2015, and Faster #acrpl("R-CNN") @renFasterRCNNRealTime2016.
+
+- *Single-Stage Detectors*: These detectors perform both tasks simultaneously in a single pass through the network. That means passing the image through a network that both regresses bounding boxes and classifies objects in those boxes at the same time. Examples include #acr("YOLO") @redmonYouOnlyLook2016  and #acr("SSD") @liuSSDSingleShot2016. This approach can be faster but may sacrifice some accuracy compared to two-stage detectors, as the feature extractor is not optimized for both tasks .
+
+Given the computational constraints imposed by the requirement for edge-deployment, single-stage detectors were chosen. Past research has shown that #acr("SSD")-variants with Inception-v2 and MobileNet-v1 backbones perform notably faster than their Faster #acr("R-CNN") counterparts, namely 4 to 7 times as fast @akshathaHumanDetectionAerial2022.
+
+Furthermore, benchmarks of #acr("SSD") and #acr("YOLO") on the MS COCO dataset yielded similar results favoring #acr("SSD") in terms of speed when deployed on edge devices, namely the Raspberry Pi 4 both with and without a dedicated #acr("TPU") @alqahtaniBenchmarkingDeepLearning2024. #acr("YOLO") did deliver higher #acr("mAP") scores, but the difference was not significant enough to justify the trade-off in speed, in particular taking into account the benefit of speed for real-time applications when multiple images are captured each second and fast enough processing allows for multiple attempts at detection. Additionally, the #acr("SSD") models tested consumed less energy than their #acr("YOLO") counterparts @alqahtaniBenchmarkingDeepLearning2024, making them a more suitable choice that minimizes the need for human intervention to replace the battery of the edge device, which is a significant factor in the cost of deployment and maintenance of the system.
+
+== #acr("SGD") as Optimizer in Deep Learning <sgd-optimizer>
+Deep Learning Models are optimized by minimizing the loss function, which is a measure of the difference between the predicted output and the expected output, i.e. the ground truth. The loss function is typically a differentiable function, which means that it can be used to compute the gradient of the loss with respect to the model parameters. The gradient is then used to update the model parameters in the direction that minimizes the loss function, hence the name gradient descent.
+
+In most cases, the training dataset is too large to compute the gradient with respect to the entire training dataset. Instead, the optimization takes place in so-called mini-batches of training data of a fixed size, under the assumption that the gradient computed with respect to a mini-batch of training data is a good approximation of the gradient that would be obtained if the calculation was performed across the entire training dataset.
+
+This differentiation of the loss function with respect to a mini-batch of training data is called #acrl("SGD"), (#acr("SGD")).
+
+As desribed before, #acr("SGD") is a first-order optimization algorithm, which means that it only considers the first-order derivatives of the loss function with respect to the model parameters. This is in contrast to second-order optimization algorithms, such as Newton's method, which consider the second-order derivatives of the loss function with respect to the model parameters. However, first-order optimization algorithms are generally preferred in deep learning because they are computationally more efficient and can be easily implemented on hardware accelerators such as #acrpl("GPU") and #acrpl("TPU"), which is why second-order optimization algorithms will not be further discussed in this work.
+
+One limitation of #acr("SGD") lies in the so-called #acr("VGP") problem, which occurs due to the calculation of the partial derivates by means of the chain rule. The chain rule for differentiation states that the derivative of a composite function is the product of the derivatives of its components:
+
+$ 
+f(g(x)) = f'(g(x)) dot g'(x)
+$
+
+In this equation, $f$ and $g$ are the functions applying the linear transformations 
+
+In the context of deep learning, this means that the derivative of the loss function with respect to a particular weight in the network
 
 
-
-
-- SSD rather than Faster R-CNN due to faster inference: @akshathaHumanDetectionAerial2022
-- SSD > YOLO because of edge-specific faster inference: @alqahtaniBenchmarkingDeepLearning2024
-
-// TODO: Incorporate switch to multi-label setup later
 
 == Single Shot MultiBox Detector (SSD) Architecture <ssd-arch>
-Detailed explanation of SSD model architecture, including backbone networks (VGG, ResNet) and detection mechanisms.
+The SSD architecture is a single-stage detector that uses a base network to extract features from the input image and then applies additional convolutional layers as well as #acr("FC") layers to predict bounding boxes and class scores for each feature map. The following sections provide a more detailed explanation of the SSD architecture and its components.
 
 === Backbone Networks for Feature Extraction <backbone-networks>
 Explores the role of backbone networks (VGG, ResNet) in feature extraction and their impact on SSD performance.
+
+The SSD architecture uses a base network to extract features from the input image. The base network is typically a pre-trained #acr("CNN"), such as #acr("VGG") or #acr("ResNet"), which has been trained on a large dataset like ImageNet.
+==== #acr("VGG") as backbone <vgg-backbone>
+The #acr("VGG") network is a deep #acr("CNN") that consists of 16 or 19 layers, depending on the variant. The #acr("VGG") network is known for its simplicity and effectiveness in image classification tasks. In its vanilla configuration, it takes 224x224 RGB images as input and outputs a 1000-dimensional vector of class probabilities. It only uses 3x3 convolutional layers and 2x2 max-pooling layers for feature extraction and the #acr("ReLU") activation function for non-linearity. Eventually, it employs three #acr("FC") layers for classification. The soft-max activation function is used in the final layer to predict the class probabilities. Overall, the number of trainable parameters for the #acr("VGG")-16 network is 138 million. @simonyanVeryDeepConvolutional2015
+
+==== #acr("ResNet") as backbone <resnet-backbone>
+The #acr("ResNet") network is a deep #acr("CNN") that uses residual blocks to address the vanishing gradient problem. The vanishing gradients problem occurs when the gradients become too small to update the weights of the earlier layers during backpropagation. This can lead to slow convergence or even divergence of the training process. The #acr("ResNet")
+
 
 
 === Feature Maps and Anchor Boxes <feature-maps>
@@ -186,6 +219,9 @@ Details the thermal image datasets (FLIR ADAS v2, AAU-PD-T, OSU-T, M3FD, KAIST-C
 
 == Model Implementation <model-impl>
 Explains the implementation of SSD models with different backbones and preprocessing configurations.
+
+
+TODO: Incorporate switch to multi-label setup later
 
 == Experimental Design <exp-design>
 Outlines the systematic approach to comparing model variants and the evaluation framework.
@@ -250,34 +286,6 @@ This thesis has systematically evaluated the application of Single Shot MultiBox
 
 = Examples <examples>
 
-Just a couple of examples to demonstrate proper use of the typst template and its functions.
-
-== Acronyms <acr-examples>
-
-Use the `acr` function to insert acronyms, which looks like this #acr("HTTP").
-
-#acrlpl("API") are used to define the interaction between different software systems.
-
-#acrs("REST") is an architectural style for networked applications.
-
-== Glossary <gls-examples>
-
-Use the `gls` function to insert glossary terms, which looks like this:
-
-The #gls("Stochastic Gradient Descent") is an optimization algorithm used in Machine Learning.
-
-== Lists <list-examples>
-
-Create bullet lists or numbered lists.
-
-- This
-- is a
-- bullet list
-
-+ It also
-+ works with
-+ numbered lists!
-
 == Figures and Tables <fig-table-examples>
 
 Create figures or tables like this:
@@ -333,12 +341,5 @@ Insert code snippets like this:
 
 #pagebreak()
 
-== References <ref-examples>
-
-Cite like this #cite(form: "prose", <akshathaHumanDetectionAerial2022>).
-Or like this @farooqObjectDetectionThermal2021.
-
-
-You can also reference by adding `<ref>` with the desired name after figures or headings.
 
 For example this @table references the table on the previous page.
