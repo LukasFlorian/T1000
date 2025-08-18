@@ -20,8 +20,8 @@
   SVM: "Support Vector Machine. A type of supervised learning algorithm that is used for classification and regression tasks. It is based on the idea of finding a hyperplane that best separates the data into different classes.",
   "MS COCO": "Microsoft Common Objects in Context. A large-scale object detection, segmentation, and captioning dataset.",
   "PASCAL VOC": "Pascal Visual Object Classes. A dataset for object detection and segmentation tasks.",
-  VGP: "Vanishing Gradient Problem. A problem that occurs in deep neural networks where the gradients of the loss function with respect to the weights become very small, making it difficult to train the network."
-
+  VGP: "Vanishing Gradient Problem. A problem that occurs in deep neural networks where the gradients of the loss function with respect to the weights become very small, making it difficult to train the network.",
+  BGD: "Batch Gradient Descent. A type of gradient descent algorithm that updates the weights of the neural network using the entire training dataset at once.",
 )
 
 /*

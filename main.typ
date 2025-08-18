@@ -161,9 +161,9 @@ $
 f(g(x)) = f'(g(x)) dot g'(x)
 $
 
-In this equation, $f$ and $g$ are the functions applying the linear transformations 
+In this equation, $f$ and $g$ are the functions applying the linear transformations corresponding to a convolutional layers, its successor layer and their activation functions, respectively. Since both convolutional kernels contain a large number of parameters, each individual parameter only has a small impact on the overall loss function. As a result, the product of the derivatives of the loss function with respect to the parameters of the two layers can become very small, leading to a phenomenon known as the #acr("VGP").
 
-In the context of deep learning, this means that the derivative of the loss function with respect to a particular weight in the network
+In the context of deep learning, this means that deeper models are particularly likely to suffer from this problem, as more layers amplify the core issue. One approach to mitigate this problem is to introduce the so-called residual layers allowing for an identity mapping of the input to the output of a layer, which will be explained in further detail in @resnet-backbone.
 
 
 
