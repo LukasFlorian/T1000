@@ -50,5 +50,7 @@
   AdaBoost: "Adaptive Boosting",
   SVM: "Support Vector Machine",
   VGP: "Vanishing Gradient Problem",
+  BN: "Batch Normalization",
   BGD: "Batch Gradient Descent",
+  TL: "Transfer Learning",
 )

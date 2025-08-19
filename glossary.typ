@@ -22,6 +22,8 @@
   "PASCAL VOC": "Pascal Visual Object Classes. A dataset for object detection and segmentation tasks.",
   VGP: "Vanishing Gradient Problem. A problem that occurs in deep neural networks where the gradients of the loss function with respect to the weights become very small, making it difficult to train the network.",
   BGD: "Batch Gradient Descent. A type of gradient descent algorithm that updates the weights of the neural network using the entire training dataset at once.",
+  BN: "Batch Normalization. A technique used in deep neural networks to normalize the activations of the layers. It helps to speed up the training of the network and improve its performance.",
+  TL: "Transfer Learning. A technique used in machine learning where a pre-trained model is used as the starting point for a new model. It helps to speed up the training of the new model and improve its performance.",
 )
 
 /*
