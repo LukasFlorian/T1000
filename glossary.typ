@@ -1,7 +1,7 @@
 #let glossary = (
   Batch: "A batch is a group of data processed together as a unit.",
   "Batch Gradient Descent": "Batch Gradient Descent is an optimization algorithm used to minimize the loss function in machine learning models by iteratively updating the model parameters based on their gradients with respect to the entire training dataset.",
-  SGD: "SGD is an optimization algorithm used to minimize the loss function in machine learning models by iteratively updating the model parameters based on their partial derivatives with respect to a small subset of the training data.",
+  SGD: "SGD is an optimization algorithm used to minimize the loss function in machine learning models by iteratively updating the model parameters based on their partial derivatives with respect to individual samples in the training data.",
   Tensor: "A tensor is a mathematical object that generalizes scalars, vectors, and matrices to higher-dimensional arrays.",
   "FC Layer": "A fully connected layer is a layer in a neural network where each neuron is connected to every neuron in the previous layer.",
   CNN: "A convolutional neural network (CNN) is a type of neural network designed to process data with a grid-like topology, such as images.",
@@ -24,6 +24,8 @@
   BGD: "Batch Gradient Descent. A type of gradient descent algorithm that updates the weights of the neural network using the entire training dataset at once.",
   BN: "Batch Normalization. A technique used in deep neural networks to normalize the activations of the layers. It helps to speed up the training of the network and improve its performance.",
   TL: "Transfer Learning. A technique used in machine learning where a pre-trained model is used as the starting point for a new model. It helps to speed up the training of the new model and improve its performance.",
+  MBGD: "Mini-Batch Gradient Descent. A type of gradient descent algorithm that updates the weights of the neural network using a small subset of the training data at a time.",
+  Backpropagation: "A method used to train neural networks by calculating the gradient of the loss function with respect to the weights of the network and updating the weights in the opposite direction of the gradient. It is called backpropagation because the gradient is calculated from the prediction to the input layers.",
 )
 
 /*

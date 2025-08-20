@@ -53,4 +53,5 @@
   BN: "Batch Normalization",
   BGD: "Batch Gradient Descent",
   TL: "Transfer Learning",
+  MBGD: "Mini-Batch Gradient Descent",
 )
