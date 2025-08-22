@@ -65,6 +65,14 @@
   file = {/Users/lukas/Zotero/storage/Q3CC46VK/Bridle - 1989 - Training Stochastic Model Recognition Algorithms as Networks can Lead to Maximum Mutual Information.pdf}
 }
 
+@article{burnhamComparisonRobertsSobel,
+  title = {Comparison of the {{Roberts}}, {{Sobel}}, {{Robinson}}, {{Canny}}, and {{Hough Image Detection Algorithms}}},
+  author = {Burnham, John and Hardy, Jonathan and Meadors, Kyle},
+  abstract = {This paper presents a comparison and evaluation of the Roberts, Sobel, Robinson, Canny, and Hough image detection algorithms based on their ability to detect red squares on a black and white background. Inspired by the Institute of Electrical and Electronics Engineers (IEEE) Southeastcon student hardware competition, the algorithms are tested on an image database comprised of gray scale images taken from a test platform containing red squares on a black and white background. The success of each algorithm is based on its accuracy in detecting the red squares within the images from the database. The results of the algorithms are then compared statistically to determine which one is the best suited for this application.},
+  langid = {english},
+  file = {/Users/lukas/Zotero/storage/BWT2D4X2/Burnham et al. - Comparison of the Roberts, Sobel, Robinson, Canny, and Hough Image Detection Algorithms.pdf}
+}
+
 @article{cortesSupportvectorNetworks1995,
   title = {Support-Vector Networks},
   author = {Cortes, Corinna and Vapnik, Vladimir},
@@ -148,6 +156,14 @@
   isbn = {978-0-7695-2271-5},
   langid = {english},
   file = {/Users/lukas/Zotero/storage/T35VWLF3/Davis and Keck - 2005 - A Two-Stage Template Approach to Person Detection in Thermal Imagery.pdf}
+}
+
+@article{dengImageNetLargeScaleHierarchical,
+  title = {{{ImageNet}}: {{A Large-Scale Hierarchical Image Database}}},
+  author = {Deng, Jia and Dong, Wei and Socher, Richard and Li, Li-Jia and Li, Kai and {Fei-Fei}, Li},
+  abstract = {The explosion of image data on the Internet has the potential to foster more sophisticated and robust models and algorithms to index, retrieve, organize and interact with images and multimedia data. But exactly how such data can be harnessed and organized remains a critical problem. We introduce here a new database called ``ImageNet'', a largescale ontology of images built upon the backbone of the WordNet structure. ImageNet aims to populate the majority of the 80,000 synsets of WordNet with an average of 5001000 clean and full resolution images. This will result in tens of millions of annotated images organized by the semantic hierarchy of WordNet. This paper offers a detailed analysis of ImageNet in its current state: 12 subtrees with 5247 synsets and 3.2 million images in total. We show that ImageNet is much larger in scale and diversity and much more accurate than the current image datasets. Constructing such a large-scale database is a challenging task. We describe the data collection scheme with Amazon Mechanical Turk. Lastly, we illustrate the usefulness of ImageNet through three simple applications in object recognition, image classification and automatic object clustering. We hope that the scale, accuracy, diversity and hierarchical structure of ImageNet can offer unparalleled opportunities to researchers in the computer vision community and beyond.},
+  langid = {english},
+  file = {/Users/lukas/Zotero/storage/KNX2YVH7/Deng et al. - ImageNet A Large-Scale Hierarchical Image Database.pdf}
 }
 
 @misc{dengInadequatelyPretrainedModels2023,
@@ -243,7 +259,7 @@
 @misc{FREEFLIRThermal,
   title = {{{FREE}} - {{FLIR Thermal Dataset}} for {{Algorithm Training}} {\textbar} {{OEM}}.{{FLIR}}.Com},
   urldate = {2025-08-14},
-  howpublished = {https://oem.flir.com/en-in/solutions/automotive/adas-dataset-form/},
+  url = {https://oem.flir.com/en-in/solutions/automotive/adas-dataset-form/},
   file = {/Users/lukas/Zotero/storage/4847QU9Z/adas-dataset-form.html}
 }
 
@@ -517,6 +533,13 @@
   file = {/Users/lukas/Zotero/storage/MJNCNMG7/Ren et al. - 2016 - Faster R-CNN Towards Real-Time Object Detection with Region Proposal Networks.pdf;/Users/lukas/Zotero/storage/DCWMXZRR/1506.html}
 }
 
+@misc{ResNetV15PyTorch,
+  title = {{{ResNet}} v1.5 for {{PyTorch}} {\textbar} {{NVIDIA NGC}}},
+  urldate = {2025-08-22},
+  url = {https://catalog.ngc.nvidia.com/orgs/nvidia/resources/resnet\_50\_v1\_5\_for\_pytorch},
+  file = {/Users/lukas/Zotero/storage/4LJX7H6K/resnet_50_v1_5_for_pytorch.html}
+}
+
 @misc{ruderOverviewGradientDescent2017,
   title = {An Overview of Gradient Descent Optimization Algorithms},
   author = {Ruder, Sebastian},
@@ -568,6 +591,23 @@
   archiveprefix = {arXiv},
   keywords = {Computer Science - Computer Vision and Pattern Recognition},
   file = {/Users/lukas/Zotero/storage/AJ542YFS/Simonyan and Zisserman - 2015 - Very Deep Convolutional Networks for Large-Scale Image Recognition.pdf;/Users/lukas/Zotero/storage/NMKPB7QF/1409.html}
+}
+
+@inproceedings{teutschLowResolutionPerson2014,
+  title = {Low {{Resolution Person Detection}} with a {{Moving Thermal Infrared Camera}} by {{Hot Spot Classification}}},
+  booktitle = {2014 {{IEEE Conference}} on {{Computer Vision}} and {{Pattern Recognition Workshops}}},
+  author = {Teutsch, Michael and Mueller, Thomas and Huber, Marco and Beyerer, Juergen},
+  year = {2014},
+  month = jun,
+  pages = {209--216},
+  publisher = {IEEE},
+  address = {Columbus, OH, USA},
+  doi = {10.1109/CVPRW.2014.40},
+  urldate = {2025-08-21},
+  abstract = {In many visual surveillance applications the task of person detection and localization can be solved easier by using thermal long-wave infrared (LWIR) cameras which are less affected by changing illumination or background texture than visual-optical cameras. Especially in outdoor scenes where usually only few hot spots appear in thermal infrared imagery, humans can be detected more reliably due to their prominent infrared signature. We propose a two-stage person recognition approach for LWIR images: (1) the application of Maximally Stable Extremal Regions (MSER) to detect hot spots instead of background subtraction or sliding window and (2) the verification of the detected hot spots using a Discrete Cosine Transform (DCT) based descriptor and a modified Random Na{\textasciidieresis}{\i}ve Bayes (RNB) classifier. The main contributions are the novel modified RNB classifier and the generality of our method. We achieve high detection rates for several different LWIR datasets with low resolution videos in real-time. While many papers in this topic are dealing with strong constraints such as considering only one dataset, assuming a stationary camera, or detecting only moving persons, we aim at avoiding such constraints to make our approach applicable with moving platforms such as Unmanned Ground Vehicles (UGV).},
+  isbn = {978-1-4799-4308-1},
+  langid = {english},
+  file = {/Users/lukas/Zotero/storage/YS3FABMC/Teutsch et al. - 2014 - Low Resolution Person Detection with a Moving Thermal Infrared Camera by Hot Spot Classification.pdf}
 }
 
 @article{tsaiUsingDeepLearning2022,

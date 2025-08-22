@@ -47,8 +47,8 @@
   time-to-complete: "16 Wochen",
   abstract: abstract,
   show-confidentiality-statement: false,
+  bib-style: "ieee"
 )
-
 
 // Table of Contents and Content Structure
 
@@ -103,15 +103,6 @@ This research represents a significant step toward practical implementation of A
 
 The field of object detection has undergone significant evolution from traditional computer vision techniques to sophisticated deep learning architectures. Understanding this progression is essential for contextualizing the current work's contribution to thermal image analysis. This section examines the theoretical foundations of object detection, with particular emphasis on the Single Shot MultiBox Detector (SSD) architecture and its applicability to thermal imagery processing challenges.
 
-*Key areas to develop:*
-- Evolution from traditional methods (HOG, SIFT) to deep learning
-- Comparison of one-stage vs. two-stage detection models
-- SSD architecture fundamentals and anchor box mechanisms
-- Backbone network analysis (VGG vs. ResNet trade-offs)
-- Thermal imaging characteristics and preprocessing challenges
-- Existing work on infrared human detection
-- Gap analysis: Limited research on SSD for thermal surveillance
-
 == Object Detection Fundamentals <obj-detection>
 Most object detection methods can be broadly categorized into two main approaches: traditional methods and deep learning-based methods. The former mainly rely on handcrafted features and sliding window techniques @violaRapidObjectDetection2001a, while newer approaches in this field leverage deep #acrpl("CNN") or #acr("ViT") architectures to automatically learn features from data @dosovitskiyImageWorth16x162021 @alqahtaniBenchmarkingDeepLearning2024.
 
@@ -140,9 +131,9 @@ Resorting to smaller kernels, however, serves as a prior making use of the heuri
 
 Object detection, as opposed to image classification, consists of two main tasks; locating where an object is and classifying which class it belongs to. In the context of machine learning, that means  regression must be used to approximate the location of an object and the concept of classification is applied to determine its class. #acrpl("CNN") solving these tasks can be categorized into two main categories:
 
-- *Two-Stage Detectors*: These detectors operate in two stages. The first stage proposes regions of interest and the second stage classifies which object they contain. In more detail, that means regressing bounding boxes and assessing the "objectness" of that region, for example by using logistic regression. If the confidence this region contains an object exceeds a given threshold, the second stage then classifies the object in that region. That requires a second pass of the extracted region through a classifier network. This two-stage approach can be computationally expensive, especially when dealing with a large number of proposals. Examples of two-stage detectors include #acrpl("R-CNN") @girshickRichFeatureHierarchies2014, Fast #acrpl("R-CNN") @girshickFastRCNN2015, and Faster #acrpl("R-CNN") @renFasterRCNNRealTime2016.
+*Two-Stage Detectors* split the detection objective into the two tasks mentioned before. The first stage proposes regions of interest and the second stage classifies which object they contain. In more detail, that means regressing bounding boxes and assessing the "objectness" of that region, for example by using logistic regression. If the confidence this region contains an object exceeds a given threshold, the second stage then classifies the object in that region. That requires a second pass of the extracted region through a classifier network. This two-stage approach can be computationally expensive, especially when dealing with a large number of proposals. Examples of two-stage detectors include #acrpl("R-CNN") @girshickRichFeatureHierarchies2014, Fast #acrpl("R-CNN") @girshickFastRCNN2015, and Faster #acrpl("R-CNN") @renFasterRCNNRealTime2016.
 
-- *Single-Stage Detectors*: These detectors perform both tasks simultaneously in a single pass through the network. That means passing the image through a network that both regresses bounding boxes and classifies objects in those boxes at the same time. Examples include #acr("YOLO") @redmonYouOnlyLook2016  and #acr("SSD") @liuSSDSingleShot2016. This approach can be faster but may sacrifice some accuracy compared to two-stage detectors, as the feature extractor is not optimized for both tasks .
+*Single-Stage Detectors*, on the other hand, perform both tasks simultaneously in a single pass through the network. That means passing the image through a network that both regresses bounding boxes and classifies objects in those boxes at the same time. Examples include #acr("YOLO") @redmonYouOnlyLook2016  and #acr("SSD") @liuSSDSingleShot2016. This approach can be faster but may sacrifice some accuracy compared to two-stage detectors, as the feature extractor is not optimized for both tasks.
 
 Given the computational constraints imposed by the requirement for edge-deployment, single-stage detectors were chosen. Past research has shown that #acr("SSD")-variants with Inception-v2 and MobileNet-v1 backbones perform notably faster than their Faster #acr("R-CNN") counterparts, namely 4 to 7 times as fast @akshathaHumanDetectionAerial2022.
 
@@ -212,17 +203,16 @@ Explores the role of backbone networks (VGG, ResNet) in feature extraction and t
 
 The SSD architecture uses a base network to extract features from the input image. The base network is typically a pre-trained #acr("CNN"), such as #acr("VGG") or #acr("ResNet"), which has been trained on a large dataset like ImageNet. This assumption that features learned for other tasks can be reused for object detection is known as #acr("TL") and has proven to often be very effective in practice. @hudaEffectDiverseDataset2020, @dengInadequatelyPretrainedModels2023
 
-==== VGG <vgg>
-The #acr("VGG") network is a deep #acr("CNN") that consists of 16 or 19 layers, depending on the variant. It is known for its simplicity and effectiveness in image classification tasks. In its vanilla configuration, it takes 224x224 #acr("RGB") images as input and outputs a 1000-dimensional vector of class probabilities. It only uses 3x3 convolutional layers and 2x2 max-pooling layers for feature extraction and the #acr("ReLU") activation function for non-linearity. Eventually, it employs three #acr("FC") layers for classification. The soft-max activation function is used in the final layer to predict the class probabilities. Overall, the number of trainable parameters for the #acr("VGG")-16 network is 138 million @simonyanVeryDeepConvolutional2015. #acr("VGG") is the default backbone network employed in the original #acr("SSD") paper @liuSSDSingleShot2016.
+*The #acrf("VGG") network* is a deep #acr("CNN") that consists of 16 or 19 layers, depending on the variant. It is known for its simplicity and effectiveness in image classification tasks. In its vanilla configuration, it takes 224x224 #acr("RGB") images as input and outputs a 1000-dimensional vector of class probabilities. It only uses 3x3 convolutional layers and 2x2 max-pooling layers for feature extraction and the #acr("ReLU") activation function for non-linearity. Eventually, it employs three #acr("FC") layers for classification. The soft-max activation function is used in the final layer to predict the class probabilities. Overall, the number of trainable parameters for the #acr("VGG")-16 network is 138 million @simonyanVeryDeepConvolutional2015. #acr("VGG") is the default backbone network employed in the original #acr("SSD") paper @liuSSDSingleShot2016.
 
-==== ResNet <resnet>
-While the #acr("ResNet") architecture is mostly similar to the #acr("VGG") architecture in that it is a #acr("CNN"), it uses a couple of more advanced techniques for feature extraction.
 
-Firstly, it uses residual blocks to address the #acr("VGP") while significantly increasing network depth through employment of considerably more convolutional layers. Secondly, it uses #acr("BN") to stabilize and accelerate training. #acr("BN") layers perform normalization of their input along the batch dimension, although batch in this case refers to the channels of the input tensor and not to the batch size. #acr("BN") layers only have two trainable parameters, the scale and shift parameters, which are learned during training and are used to scale and shift the normalized input. @ioffeBatchNormalizationAccelerating2015
+*While the #acrf("ResNet")* architecture is mostly similar to the #acr("VGG") architecture in that it is a #acr("CNN"), it uses a couple of more advanced techniques for feature extraction.
+
+Firstly, it utilizes residual blocks to address the #acr("VGP") while significantly increasing network depth through employment of considerably more convolutional layers @heDeepResidualLearning2015. Secondly, it uses #acr("BN") to stabilize and accelerate training. #acr("BN") layers perform normalization of their input along the batch dimension, although batch in this case refers to the channels of the input tensor and not to the batch size. #acr("BN") layers only have two trainable parameters, the scale and shift parameters, which are learned during training and are used to scale and shift the normalized input. The stabilizing effect stems from the fact that #acr("BN") reduces the covariate shift between layers during update steps. The covariate shift describes the change in the distribution of the input to a layer due to the change in the parameters of the previous layer, which significantly slows down training progress when using #acr("SGD"). @ioffeBatchNormalizationAccelerating2015
 
 Secondly, a bottleneck architecture ensures that deeper networks exploiting the solution offered by residual layers do not become too large in overall parameter count. This architecture uses an initial convolutional layer to reduce the number of channels in the input tensor, followed by additional convolutional layers that use the reduced number of channels to perform the actual feature extraction. The output of the last convolutional layer of each bottleneck is in most cases upsampled again to a higher number of channels. @heDeepResidualLearning2015
 
-In order to find out whether #acrpl("ResNet") offer significant advantages over traditional #acrpl("CNN") models, the #acr("ResNet")-152 model, which is one of the deepest #acr("ResNet") configurations consisting of 152 convolutional layers, is used for comparison to the #acr("VGG")-16 model. #acr("ResNet")-152 uses
+In order to find out whether #acrpl("ResNet") offer significant advantages over traditional #acrpl("CNN") models, the #acr("ResNet")-152 model, which is one of the deepest #acr("ResNet") configurations consisting of 152 convolutional layers, is used for comparison to the #acr("VGG")-16 model.
 
 
 === Feature Maps and Anchor Boxes <feature-maps>
@@ -253,9 +243,9 @@ $
 $<softmax-eqn>@bridleTrainingStochasticModel1989
 
 === MultiBox Loss Function <multibox-loss>
-First of all, in order to compute a loss, the network needs to know which anchor boxes are positive and which are negative. To determine which ground-truth object is assigned to which anchor box, the network uses the #acr("IoU") metric @liuSSDSingleShot2016, also known as the Jaccard index. That is a measure for the overlap between two bounding boxes $B_1$ and $B_2$, defined as the area of their intersection divided by the area of their union, as shown in @iou-eqn @costaFurtherGeneralizationsJaccard2021.
+First of all, in order to compute a loss, the network needs to know which anchor boxes contain an object and which do not. To determine which ground-truth object is assigned to which anchor box, the network uses the #acr("IoU") metric @liuSSDSingleShot2016, also known as the Jaccard index @costaFurtherGeneralizationsJaccard2021. That is a measure for the overlap between two bounding boxes $B_1$ and $B_2$, defined as the area of their intersection divided by the area of their union, as shown in @iou-eqn @costaFurtherGeneralizationsJaccard2021.
 $
-  "IoU"(B_1, B_2) = (|B_1 sect B_2|)/(|B_1 union B_2|)
+  "IoU"(B_1, B_2) = (|B_1 inter B_2|)/(|B_1 union B_2|)
 $<iou-eqn>
 
 This #acr("IoU") metric is then used to match the regressed boxes to the ground-truth boxes. It is calculated for each pair of anchor boxes and ground-truth boxes. Based on the #acr("IoU") scores, the network determines which anchor boxes are positive and which are negative. Negative anchor boxes are those that do not have an #acr("IoU") above a certain threshold with any ground-truth box. Positive boxes, on the other hand, satisfy the condition that they must have a certain minimum overlap with any ground-truth box. If they overlap sufficiently with multiple ground-truth boxes, the one with the highest #acr("IoU") is assigned to that object. @liuSSDSingleShot2016, @erhanScalableObjectDetection2013
@@ -266,12 +256,11 @@ Since the network is supposed to reliably detect objects in images, it needs a l
 
 For this reason, it is not feasible to use all negative anchor boxes for training, as this would heavily skew the loss function towards the negative class. Instead, the network uses a #acr("HNM") technique to select a fixed number of negative anchor boxes for training.
 
-* #acrf("HNM"): * <hard-negative-mining>
-#acr("HNM") means only selecting the most difficult negative examples for training. This is done by sorting the negative anchor boxes by their confidence loss and selecting the top $k$ anchor boxes with the highest confidence loss. In practice, this is done by defining a ratio between negative and positive anchor boxes and selecting the according number of negative anchor boxes. This ensures that the network is trained on the training examples it finds most difficult to classify correctly as negative. All other negative anchor boxes are ignored, that means they do not contribute to the loss function. @liuSSDSingleShot2016
+*#acrf("HNM")* means only selecting the most difficult negative examples for training. This is done by sorting the negative anchor boxes by their confidence loss and selecting the top $k$ anchor boxes with the highest confidence loss. In practice, this is done by defining a ratio between negative and positive anchor boxes and selecting the according number of negative anchor boxes. This ensures that the network is trained on the training examples it finds most difficult to classify correctly as negative. All other negative anchor boxes are ignored, that means they do not contribute to the loss function. @liuSSDSingleShot2016
 
 Additionally, models of the SSD family employ a technique called #acr("NMS") to filter out duplicate detections and improve detection accuracy. It his highly likely that an input image of dimensions 300x300 will have multiple of the 8732 anchor boxes overlapping with each other and picking up on the same ground-truth object.
 
-* #acrf("NMS"): * <nms> After assigning each anchor box to a ground-truth object (or counting it to the negative anchor boxes) the network applies #acr("NMS") to filter out duplicate detections. Algorithmically, #acr("NMS") is carried out as follows @erhanScalableObjectDetection2013 @liuSSDSingleShot2016:
+*#acrf("NMS")* is applied after assigning each anchor box to a ground-truth object (or counting it to the negative anchor boxes) to filter out duplicate detections. Algorithmically, #acr("NMS") is carried out as follows @erhanScalableObjectDetection2013 @liuSSDSingleShot2016:
 + The algorithm begins by grouping all anchor boxes that have been assigned to the same ground-truth object.
 + For each ground-truth object, the assigned anchor boxes are sorted by their confidence score in descending order.
 + The anchor box with the highest confidence score is selected as one of the final detections that will be accounted for in the loss function.
@@ -313,32 +302,109 @@ $
   )
 $<offset-conversion>
 
-This representation can be used to determine the $"SmotthL1"$ localization loss. Let $"Pos"$ be the set of positive anchor indices selected by #acr("NMS"), $"G"$ be the set of ground-truth box indices and $a_"ij"$ the indicator that the $i$-th ground-truth box is assigned to the $j$-th anchor box. Then the localization loss $L_"loc"$ is defined as in @loc-loss @liuSSDSingleShot2016.
+This representation can be used to determine the $"SmotthL1"$ localization loss. Let $"P"$ be the set of positive anchor indices selected by #acr("NMS"), $"G"$ be the set of ground-truth box indices and $a_"ij"$ the indicator that the $i$-th ground-truth box is assigned to the $j$-th anchor box. Then the localization loss $L_"loc"$ is defined as in @loc-loss @liuSSDSingleShot2016.
 
 $
-  L_"loc"(x, l, g) &= sum_(i in "Pos")(sum_(j in "G")(sum_(m in {"cx", "cy", w, h}) a_"ij" "SmoothL1"(accent(g, hat)_j^m, l_i^m)))
+  L_("loc")(a, l, g, "P", "G") &= sum_(i in "P")(sum_(j in "G")(sum_(m in {"cx", "cy", w, h}) a_"ij" "SmoothL1"(accent(g, hat)_j^m, l_i^m)))
 $<loc-loss>
 
 The second component of the overall loss function is the classification error, which is the difference between the predicted class and the ground-truth class. This is computed for the hard negative as well as positive anchor boxes. The classification loss for any given anchor box with confidence score vector $accent(p, arrow) in (0,1)^C$, one-hot ground-truth class vector $accent(y, arrow) in {0,1}^C$ and $C$ classes to detect is computed using the cross-entropy loss from @ce-loss. The cross-entropy loss is specifically designed for multi-class classification problems. @elharroussLossFunctionsDeep2025
 $
   "CrossEntropy"(accent(y, arrow), accent(p, arrow)) = -sum_(c=1)^C y_c dot log(p_c)
 $<ce-loss>
+
 Where $C$ is the number of classes to detect, $y_(i,c) in {0,1}$ is the binary ground-truth label whether sample $i$ belongs to class $c$, and $p_(i,c) in (0,1) $ is the predicted probability that $c$ is the correct class for $i$.
 
-After adjusting for the number of positive anchor boxes - such that training images containing more positive anchor boxes do not contriubte overproportionally to the loss - @class-loss describes the classification loss.
+After adjusting for the number of positive anchor boxes - such that training images containing more positive anchor boxes do not contriubte overproportionally to the loss - @class-loss describes the classification loss, where $"N"$ is the set of negative anchor boxes selected by #acr("HNM").
 $
-  L_("class") = 1/(|"Pos"|)(sum_(i in "Pos") "CrossEntropy"(accent(y_i, arrow), accent(p_i, arrow)) + sum_(i in "neg") "CrossEntropy"(accent(y_i, arrow), accent(p_i, arrow)))
-$<class-loss>
+  L_("class")("P", "N", y, p) = sum_(i in "P") "CrossEntropy"(accent(y_i, arrow), accent(p_i, arrow)) + sum_(i in "N") "CrossEntropy"(accent(y_i, arrow), accent(p_i, arrow))
+$<class-loss>@liuSSDSingleShot2016
 
+The final loss is a weighted sum of the localization and confidence loss with a scaling factor $alpha$, adjusted for the number of positive anchor boxes after #acr("NMS").
+$
+  L(a, y, p, l, g, "P", "N", "G") = 1/(|"P"|) dot (L_("Loc")(a, l, g, "P", "G") + alpha dot L_("class")("P", "N", y, p))
+$<total-loss>@liuSSDSingleShot2016
 
-
+Propagating that loss from @total-loss backwards through the network, the weights of the network are updated using #acr("SGD") with a learning rate $eta$, which means that each parameter's specific gradient it multiplied by $eta$ before performing the parameter update step. The basic idea is that since the result of @total-loss is a measure of the network's performance, adjusting the network parameters such that the loss function approaches a local or even global minimum should yield a better performing model also by human standards - that encapsulates better fitting bounding boxes as well as more accurate classification of the objects in the images.
 
 == Thermal Image Processing <thermal-processing>
-Discusses characteristics of thermal images, preprocessing techniques (inversion, edge enhancement), and challenges specific to infrared imagery.
 
+Thermal imaging presents unique challenges and opportunities for computer vision applications compared to conventional #acr("RGB") imagery. Understanding these characteristics and developing appropriate preprocessing techniques is crucial for optimizing object detection performance in infrared surveillance systems.
 
+=== Characteristics of Thermal Images <thermal-characteristics>
 
+Thermal images fundamentally differ from visible-light imagery in several key aspects that directly impact neural network performance. Unlike #acr("RGB") images that capture reflected light, thermal cameras detect electromagnetic radiation in the infrared spectrum (typically 8-14 μm), creating images based on the heat signatures emitted by objects @farooqObjectDetectionThermal2021.
 
+The most distinctive characteristic of thermal imagery is its independence from ambient lighting conditions. Since thermal cameras detect heat radiation rather than reflected light, they provide consistent imaging capabilities in complete darkness, fog, smoke, and other challenging environmental conditions where traditional #acr("RGB") systems fail @akshathaHumanDetectionAerial2022. This makes thermal imaging particularly valuable for surveillance applications.
+
+However, thermal images also present unique challenges for object detection models originally designed for visible-light imagery. The spectral characteristics result in different texture patterns, contrast relationships, and edge definitions compared to #acr("RGB") images. Additionally, thermal sensors often produce images with lower spatial resolution and different noise characteristics, requiring specialized preprocessing approaches to optimize detection performance. @beyererCNNbasedThermalInfrared2018
+
+=== Preprocessing Techniques for Thermal Detection <thermal-preprocessing>
+
+To address the unique characteristics of thermal imagery and improve object detection accuracy, this study implements three primary preprocessing techniques: normalization, polarity inversion, and edge enhancement. These techniques are designed to adapt #acr("RGB")-trained models to thermal domain characteristics while preserving essential spatial and thermal information.
+
+*Normalization* serves as the fundamental preprocessing step, ensuring consistent input scaling across all thermal images and enabling proper transfer of learned features from the #acr("RGB") domain for the pretrained model backbones. Following standard practice, input images are normalized using the ImageNet dataset statistics with channel-wise means of [0.485, 0.456, 0.406] and standard deviations of [0.229, 0.224, 0.225] @dengImageNetLargeScaleHierarchical.
+
+The normalization process transforms pixel intensities according to @norm-eqn, where $I_"norm"$ represents the normalized image, $I_"raw"$ is the input thermal image, $mu$ is the mean, and $sigma$ is the standard deviation for each channel.
+
+$
+  I_"norm" = (I_"raw" - mu) / sigma
+$<norm-eqn>
+
+*Polarity inversion* addresses the fundamental difference in thermal image representation compared to natural images. In mopst thermal imaging scenarios, humans appear as bright objects against darker backgrounds due to their higher body temperature. However, thermal scene characteristics such as high ambient temperatures can result in inverted polarity where humans appear dark against bright backgrounds @hudaEffectDiverseDataset2020.
+
+Since thermal images might exhibit either polarity, inverting one of the channels ensures that at least one channel maintains consistent human-background contrast relationships across all images. This approach is inspired by the work of @hudaEffectDiverseDataset2020, which demonstrated the effectiveness of various preprocessing techniques in improving transfer learning performance across diverse thermal datasets. Addtionally, @hudaEffectDiverseDataset2020 also states that specifically polarity-inverted thermal images have a close resemblance to grayscale-converted #acr("RGB") images.
+
+Since most #acr("CNN") architectures and pretrained weights are optimized for detecting darker objects (edges, shadows) against lighter backgrounds in #acr("RGB") imagery, thermal images with inverted polarity may not align with these learned features @hudaEffectDiverseDataset2020. Polarity inversion preprocessing ensures consistent object-background contrast relationships by applying a simple pixel-wise transformation according to @inversion-eqn.
+
+$
+  I_"inverted"(x,y) = 1.0 - I_"original"(x,y)
+$<inversion-eqn>
+
+Here, the constant $1.0$ is chosen simply to ensure quick computation of the inverted channel and because it lies close to the maximum pixel intensity after normalization.
+
+*Edge enhancement* preprocessing aims to strengthen the boundary definition between objects and backgrounds in thermal images, which often exhibit softer transitions compared to #acr("RGB") imagery due to heat diffusion effects or wind-induced heat dissipation @hudaEffectDiverseDataset2020. The implementation combines Gaussian blur preprocessing to reduce noise and smooth the image, followed by Sobel edge detection to create enhanced edge representations.
+
+The specific kernel used for blurring is defined in @gaussian-kernel and is chosen such that it is normalized to sum to $1.0$ and preserves spatial characteristics while decreasing intra-channel variance.
+
+$
+  K_"Gaussian" = mat(
+    1/16, 1/8, 1/16;
+    1/8, 1/4, 1/8;
+    1/16, 1/8, 1/16;
+  )
+$<gaussian-kernel>
+
+Subsequently, Sobel operators are applied to detect horizontal and vertical edges. The Sobel kernels $S_x$ and $S_y$ for horizontal and vertical edge detection are defined as @burnhamComparisonRobertsSobel:
+
+$
+  S_x = mat(
+    -1, 0, 1;
+    -2, 0, 2;
+    -1, 0, 1
+  ), quad S_y = mat(
+    -1, -2, -1;
+     0,  0,  0;
+     1,  2,  1
+  )
+$<sobel-kernels>
+
+The final edge magnitude is computed by combining both directional gradients according to @edge-magnitude, providing enhanced boundary information that emphasizes object contours in thermal imagery.
+
+$
+  E = sqrt((I * S_x)^2 + (I * S_y)^2)
+$<edge-magnitude>@burnhamComparisonRobertsSobel
+
+Where $*$ denotes the convolution operation. This edge-enhanced representation provides additional geometric information that complements the thermal intensity data, potentially improving the model's ability to localize and classify human subjects in infrared images.
+
+=== Preprocessing Combination Strategies <combination-strategies>
+
+The preprocessing techniques can be applied individually or in combination to optimize detection performance for specific thermal imaging scenarios. The normalization is always applied in order to ensure consistent transfer learning applicability. Thus, the experimental design evaluates four distinct preprocessing configurations:
+
+1. *Normalization only*: Baseline preprocessing maintaining original thermal characteristics and maximizing transfer learning performance
+2. *Normalization + Inversion*: Addressing polarity variations in thermal scenes
+3. *Normalization + Edge Enhancement*: Emphasizing geometric features for improved localization
+4. *Normalization + Inversion + Edge Enhancement*: Combined approach leveraging both polarity correction and geometric enhancement
 
 = Methodology <methodology>
 
@@ -358,10 +424,35 @@ This study employs a systematic experimental approach to evaluate the effectiven
 Details the thermal image datasets (FLIR ADAS v2, AAU-PD-T, OSU-T, M3FD, KAIST-CVPR15) and their characteristics.
 
 == Model Implementation <model-impl>
-Explains the implementation of SSD models with different backbones and preprocessing configurations.
 
+The base architecture, SSD300, is implemented with two distinct backbone networks: VGG16 and ResNet152. Each backbone is evaluated in two initialization scenarios: pretrained on ImageNet and trained from scratch on thermal imagery.
 
-TODO: Incorporate switch to multi-label setup later
+Since the normalization applied to the input images is skewed by the preprocessing techniques mentioned above, the backbone networks are equipped with an additional #acr("BN") layer that allow the network to learn an optimal normalization for specific characteristics of their respective preprocessing setup.
+
+Any specifics about the specific implementation details that are not mentioned in this documentation can be found in the #link("https://github.com/LukasFlorian/Thermal-Image-Human-Detection.git", "source code repository"), mostly in `/src/model/models.py`.
+
+=== #acrf("VGG") Backbone Implementation<vgg-backbone>
+For the #acr("SSD") network with #acr("VGG")-16 backbone, the default anchor box configuration from the original implementation @liuSSDSingleShot2016 is used.
+To reduce computational complexity, the #acr("FC") layers are removed and replaced with an additional two convolutions. Since those convolutions encompass fewer parameters than the original #acr("FC") layers, the pre-trained models use a subset of the #acr("FC") parameters and organize them in a dilated convolutional kernel. The very last #acr("FC") layer is entirely discarded, as it only generated the final class prediction when #acr("VGG") is used as an ImageNet classifier.
+
+The backbone base network is followed by a smaller auxiliary network of four sequential pairs, each consisting of a 1x1 convolutional kernel halving the number of channels and a 3x3 convolutional kernel doubling the channels again, but without padding, such that it reduces the spatial dimensions by 2 pixels in each direction.
+
+Prediction heads are positioned before each max-pooling layer, after both of the final convolutional layers of the base network, and after all four convolution pairs of the auxiliary network. Each prediction head consists of two convolutional layers; one for bounding box regression and one for class prediction @liuSSDSingleShot2016.
+
+Initially, the activation function used for the prediction heads is the softmax function. However, since the network only needs to predict only two classes, peerson and background, the softmax function is later replaced with the sigmoid function from @sigmoid-eqn that outputs a single value between 0 and 1, representing the probability of the input being a person. This change is done in response to training results and is supposed to improve the performance of the network as it does not require the model to learn the more complex relationship between its outputs in the softmax function.
+
+$
+  "sigmoid"(x) = 1/(1+e^(-x))
+$<sigmoid-eqn>
+
+Additionally, later developed variants of the model utilize #acr("BN") layers in the prediction heads before passing on the input they get to the convolutional layers. The reasons for this will be explained in @training-perf.
+
+*TODO: Incorporate switch to sigmoid-setup later in @training-perf*
+
+=== #acrf("ResNet") Backbone Implementation<resnet-backbone>
+
+The ResNet152 backbone implementation follows the architecture described in @heDeepResidualLearning2015. The #acr("ResNet") architecture does not entirely replicate that from the original paper @heDeepResidualLearning2015. Instead, it uses that from the PyTorch implementation, which is known as #acr("ResNet") v1.5 @ResNetV15PyTorch.
+
 
 == Experimental Design <exp-design>
 Outlines the systematic approach to comparing model variants and the evaluation framework.
