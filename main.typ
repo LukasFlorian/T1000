@@ -437,22 +437,38 @@ To reduce computational complexity, the #acr("FC") layers are removed and replac
 
 The backbone base network is followed by a smaller auxiliary network of four sequential pairs, each consisting of a 1x1 convolutional kernel halving the number of channels and a 3x3 convolutional kernel doubling the channels again, but without padding, such that it reduces the spatial dimensions by 2 pixels in each direction.
 
-Prediction heads are positioned before each max-pooling layer, after both of the final convolutional layers of the base network, and after all four convolution pairs of the auxiliary network. Each prediction head consists of two convolutional layers; one for bounding box regression and one for class prediction @liuSSDSingleShot2016.
+Prediction heads are positioned before each max-pooling layer, after both of the final convolutional layers of the base network, and after all four convolution pairs of the auxiliary network. Each prediction head consists of two convolutional layers; one for bounding box regression and one for class prediction @liuSSDSingleShot2016. These six prediction heads amount to a total of 8732 anchors for detection attempts.
 
-Initially, the activation function used for the prediction heads is the softmax function. However, since the network only needs to predict only two classes, peerson and background, the softmax function is later replaced with the sigmoid function from @sigmoid-eqn that outputs a single value between 0 and 1, representing the probability of the input being a person. This change is done in response to training results and is supposed to improve the performance of the network as it does not require the model to learn the more complex relationship between its outputs in the softmax function.
 
-$
-  "sigmoid"(x) = 1/(1+e^(-x))
-$<sigmoid-eqn>
+A detailed visualization of the #acr("SSD")-#acr("VGG")16 architecture is shown in @initial-vgg-image.
 
-Additionally, later developed variants of the model utilize #acr("BN") layers in the prediction heads before passing on the input they get to the convolutional layers. The reasons for this will be explained in @training-perf.
+#figure(
+  image("assets/VGG.png", width: 100%, fit: "cover"),
+  caption: "The SSD-VGG architecture initially used.",
+)<initial-vgg-image>
 
-*TODO: Incorporate switch to sigmoid-setup later in @training-perf*
+Later model configurations set the number of output channels for the class prediction convolutions to 1 instead of 2, replace the softmax activation function with a sigmoid function and employ one #acr("BN") layer at the beginning of each prediction head. The reasons for this are explained in detail in @training-perf.
+
+*TODO: Make visualization clearer with prior num annotation*
 
 === #acrf("ResNet") Backbone Implementation<resnet-backbone>
 
-The ResNet152 backbone implementation follows the architecture described in @heDeepResidualLearning2015. The #acr("ResNet") architecture does not entirely replicate that from the original paper @heDeepResidualLearning2015. Instead, it uses that from the PyTorch implementation, which is known as #acr("ResNet") v1.5 @ResNetV15PyTorch.
+The #acr("ResNet")-152 architecture does not entirely replicate that from the original paper @heDeepResidualLearning2015. Instead, it uses that from the PyTorch implementation, which is known as #acr("ResNet") v1.5 and has been shown to outperform the original architecture @ResNetV15PyTorch. The final #acr("FC") layer and average pooling layer are discarded, as they only serve the prediction in image classification, and are replaced by a single convolutional layer.
 
+In the initial setup, prediction heads are placed on top of each of the major building blocks that double the number of channels. Furthermore, one last auxiliary layer is 
+
+
+== Later Developments <later-devs>
+
+=== Sigmoid Activation Function <sigmoid-setup>
+Initially, the activation function used for the prediction heads is the softmax function. However, since the network only needs to predict only two classes, peerson and background, the softmax function is later replaced with the sigmoid function from @sigmoid-eqn that outputs a single value between 0 and 1, representing the probability of the input being a person. This change is done in response to training results and is supposed to improve the performance of the network as it does not require the model to learn the more complex relationship between its outputs in the softmax function.
+
+
+$
+  "sigmoid"(x) = 1/(1+e^(-x))
+$<sigmoid-eqn>@dubeyActivationFunctionsDeep2022
+
+Additionally, later developed variants of the model utilize #acr("BN") layers in the prediction heads before passing on the input they get to the convolutional layers. The reasons for this will be explained based on the training results in @training-perf.
 
 == Experimental Design <exp-design>
 Outlines the systematic approach to comparing model variants and the evaluation framework.
@@ -516,14 +532,11 @@ This thesis has systematically evaluated the application of Single Shot MultiBox
 - Recommendations: Implementation guidelines for practitioners
 
 = Appendix <Appendix>
-
-== Figures and Tables <fig-table-examples>
-
-Create figures or tables like this:
-
-=== Figures <fig-example>
-
-#figure(caption: "Image Example", image(width: 4cm, "assets/ts.svg"))
+== Figures <figures>
+#figure(
+  image("assets/VGG.png", width: 100%, fit: "cover"),
+  caption: "The SSD-VGG architecture initially used.",
+)
 
 === Tables <table-example>
 

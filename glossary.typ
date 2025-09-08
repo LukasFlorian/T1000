@@ -51,6 +51,7 @@
 
   Backpropagation: "A method used to train neural networks by calculating the gradient of the loss function with respect to the weights of the network and updating the weights in the opposite direction of the gradient. It is called backpropagation because the gradient is calculated from the prediction to the input layers.",
 
+  Sigmoid: [A mathematical function that maps any real number to a value between 0 and 1. It is commonly used as an activation function in neural networks. Refer to #ref(<sigmoid-eqn>) for the mathematical definition.],
 )
 
 /*
