@@ -429,32 +429,89 @@ This study employs a systematic experimental approach to evaluate the effectiven
 
 == Dataset Description <dataset>
 
-The experimental evaluation employs five complementary thermal datasets that collectively provide comprehensive coverage of diverse infrared imaging scenarios and human detection challenges. FLIR ADAS v2 @FREEFLIRThermal contributes automotive-focused thermal imagery with high thermal contrast between human subjects and vehicle/road backgrounds, captured at various distances typical of roadside surveillance.
-
-AAU-PD-T @hudaEffectDiverseDataset2020 provides controlled pedestrian detection imagery with consistent thermal signatures and systematic annotation quality, establishing reliable benchmarks for model performance assessment. OSU-T @davisTwoStageTemplateApproach2005 delivers outdoor thermal surveillance scenarios with natural environmental temperature variations and diverse background thermal signatures that challenge model generalization capabilities. M3FD @liuTargetawareDualAdversarial2022 offers thermal imagery with varying ambient conditions where human thermal signatures exhibit different polarities relative to background temperatures. KAIST-CVPR15 @hwangMultispectralPedestrianDetection2015 contributes thermal pedestrian data captured across different times of day, providing varying ambient thermal conditions that affect human-background contrast relationships. This combination ensures robust evaluation across varying thermal polarities, environmental temperature conditions, subject distances, and thermal contrast scenarios, creating a balanced compound dataset that reflects real-world thermal surveillance requirements while minimizing dataset-specific biases that could compromise model generalizability across diverse infrared imaging conditions.
+The experimental evaluation employs five complementary thermal datasets that collectively provide comprehensive coverage of diverse infrared imaging scenarios and human detection challenges. The strategic selection of these datasets addresses the fundamental objective of creating a robust, generalizable detection system capable of operating across varying environmental conditions, camera configurations, and thermal imaging scenarios that are representative of real-world surveillance applications.
 
 #figure(
-  caption: [Thermal dataset characteristics and specifications],
+  caption: [Comprehensive thermal dataset specifications and characteristics],
   table(
-    columns: (auto, auto, auto, auto, auto, auto),
-    inset: 8pt,
+    columns: (auto, auto, auto, auto, auto, auto, auto, auto),
+    inset: 6pt,
     align: horizon,
     table.header(
       [*Dataset*],
-      [*Images*],
       [*Resolution*],
+      [*Images*],
+      [*Data Splits*],
       [*Environment*],
-      [*Thermal Polarity*],
-      [*Key Characteristics*],
+      [*Camera Setup*],
+      [*Annotated Classes*],
+      [*Objects*],
     ),
 
-    [FLIR ADAS v2], [\~10,000], [640×512], [Automotive/Road], [Mixed], [Vehicle-mounted, varying distances, high contrast],
-    [AAU-PD-T], [\~2,000], [640×480], [Controlled outdoor], [Consistent], [Systematic annotation, benchmark quality],
-    [OSU-T], [\~1,800], [320×240], [Natural outdoor], [Variable], [Seasonal variations, diverse backgrounds],
-    [M3FD], [\~4,200], [640×512], [Mixed conditions], [Variable], [Ambient temperature variations],
-    [KAIST-CVPR15], [\~95,000], [640×512], [Urban pedestrian], [Time-dependent], [Day/night cycles, large scale],
+    [FLIR ADAS v2], 
+    [640×512], 
+    [10,495], 
+    [Train/Val/Test],
+    [Automotive roads, urban/highway, day/night, adverse weather],
+    [Vehicle-mounted, forward-facing],
+    [Person, car, bicycle, other vehicle, animal],
+    [~98,000],
+
+    [AAU-PD-T], 
+    [640×480], 
+    [2,941],
+    [Train: 1,941\nTest: 1,000],
+    [Controlled outdoor sports fields, winter conditions],
+    [Elevated stationary (9m height)],
+    [Person],
+    [7,809],
+
+    [OSU-T], 
+    [320×240], 
+    [17,373],
+    [Test only],
+    [University campus, natural outdoor pedestrian areas],
+    [Elevated stationary (building rooftop, 3 stories)],
+    [Person],
+    [~15,000],
+
+    [M3FD Detection], 
+    [640×512], 
+    [4,200],
+    [Train: 3,780\nTest: 420],
+    [Urban driving, challenging visibility conditions],
+    [Vehicle-mounted dual-modal],
+    [Person, vehicle, bicycle, traffic objects],
+    [~25,000],
+
+    [KAIST-CVPR15], 
+    [640×512], 
+    [95,328],
+    [Train/Val subsets],
+    [Urban pedestrian scenarios, day/night cycles],
+    [Vehicle roof-mounted, ego-centric],
+    [Person, people, cyclist],
+    [103,128],
   ),
 )<dataset-table>
+
+The dataset selection strategy addresses several critical requirements for developing a robust thermal human detection system. FLIR ADAS v2 @FREEFLIRThermal provides automotive-focused thermal imagery with high thermal contrast between human subjects and vehicle/road backgrounds, captured at various distances typical of roadside surveillance applications. The dataset's vehicle-mounted perspective and diverse geographic coverage (Santa Barbara, San Francisco, London, Paris, Spanish cities) ensures exposure to varying ambient temperatures and thermal background conditions that challenge model generalization.
+
+The datasets used are specifically selected to form a comprehensive compound training dataset that aims to cover a large v *TODO: CONTINUE HERE - AND REPLACE TABLE DATA WITH CUSTOM SPLITS*
+
+AAU-PD-T @hudaEffectDiverseDataset2020 contributes controlled pedestrian detection imagery with systematic annotation quality and consistent thermal signatures, establishing reliable benchmarks for model performance assessment. The elevated camera perspective and sports field environment provide scenarios with minimal thermal background clutter, enabling evaluation of pure human detection capabilities without complex environmental interference.
+
+OSU-T @davisTwoStageTemplateApproach2005 delivers outdoor thermal surveillance scenarios with natural environmental temperature variations and diverse background thermal signatures that challenge model generalization capabilities. The university campus setting provides realistic pedestrian detection scenarios with varying crowd densities and complex thermal backgrounds from buildings, vegetation, and infrastructure.
+
+M3FD @liuTargetawareDualAdversarial2022 offers thermal imagery with varying ambient conditions where human thermal signatures exhibit different polarities relative to background temperatures. The dual-modal nature of this dataset, while primarily used for its thermal component, ensures exposure to challenging scenarios where traditional RGB-based assumptions may not apply to thermal domain characteristics.
+
+KAIST-CVPR15 @hwangMultispectralPedestrianDetection2015 contributes the largest volume of thermal pedestrian data captured across different times of day, providing extensive variety in ambient thermal conditions that affect human-background contrast relationships. The urban traffic environment introduces complex thermal scenes with multiple heat sources (vehicles, pavement, buildings) that require sophisticated discrimination capabilities.
+
+This multi-dataset approach creates a comprehensive compound training dataset that addresses the fundamental challenge of thermal domain adaptation for human detection models originally designed for RGB imagery. The combination ensures robust evaluation across varying thermal polarities (human-hot vs human-cool scenarios), environmental temperature conditions (day/night thermal crossover points), subject distances (near-field sports surveillance vs far-field automotive detection), and thermal contrast scenarios (high-contrast winter conditions vs challenging summer thermal equilibrium).
+
+The unified annotation scheme maps all dataset-specific labels to a consistent class hierarchy: person, car, bicycle, animal, other vehicle, and background. This standardization enables seamless integration while preserving the diversity of thermal signatures and environmental conditions represented across the constituent datasets. The resulting compound dataset encompasses over 130,000 images with more than 250,000 annotated objects, providing sufficient scale and diversity for robust model training while minimizing dataset-specific biases that could compromise generalizability across diverse infrared imaging conditions encountered in real-world thermal surveillance deployments.
+
+For training purposes, FLIR ADAS v2, AAU-PD-T, KAIST-CVPR15, and M3FD Detection contribute to the training set, while FLIR ADAS v2 and AAU-PD-T provide validation data. OSU-T serves exclusively as an independent test set, ensuring unbiased evaluation on data completely unseen during training. This split strategy maintains rigorous experimental integrity while maximizing the utilization of available annotated thermal imagery for model development.
 
 == Model Implementation <model-impl>
 
