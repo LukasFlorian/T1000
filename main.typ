@@ -4,6 +4,7 @@
 
 #set par(spacing: 1.5em)
 #show list: set block(spacing: 1.5em)
+#show table.cell: set text(size: 10pt)
 
 #let abstract = [
   This project report evaluates the performance of neural object detection models for detecting humans in infrared images. The study focuses on comparing different variations of the SSD (Single Shot Mutlibox Detector) model architecture, assessing their accuracy and inference speed, and identifying the most suitable model for the given task. Additionally, different preprocessing techniques are evaluated to improve the detection performance.
@@ -109,7 +110,7 @@ Most object detection methods can be broadly categorized into two main approache
 === Traditional Object Detection Methods <traditional-methods>
 Simple approaches to object detection entail applying manually constructed feature detector kernels in a sliding window fashion to images. 
 
-An example of this is the *Viola-Jones-Algorithm* @violaRapidObjectDetection2001a:
+One example of this is the *Viola-Jones-Algorithm* @violaRapidObjectDetection2001a:
 + The algorithm first computes the integral image of the input—a representation where each pixel stores the cumulative sum of intensities from the top-left corner to its position. This allows constant-time calculation of the sum of pixel values within any rectangular region, using only four array references (the corners of the rectangle).
 
 + It then applies Haar-like features - simple rectangular patterns (e.g., edge, line, or center-surround detectors) - to rapidly identify potential regions of interest. Each feature’s value is derived by subtracting the sum of pixels in one rectangle from the sum in an adjacent rectangle, leveraging the integral image for efficiency.
@@ -121,7 +122,7 @@ An example of this is the *Viola-Jones-Algorithm* @violaRapidObjectDetection2001
 Other approaches employ #acr("HOG") descriptors. The #acrpl("HOG") are attained by dividing the image into a grid of cells, contrast-normalizing them and then computing the vertical as well as horizontal gradients of their pixels @dalalHistogramsOrientedGradients2005. The gradients for each cell are accumulated in a one-dimensional histogram which serves as that cell's feature vector @dalalHistogramsOrientedGradients2005. After labeling the cells in the training data, a #acr("SVM") can be trained to find an optimal hyperplane separating the feature vectors corresponding to the object that should be detected from those that do not contain the object @cortesSupportvectorNetworks1995.
 
 === Deep Learning-Based Object Detection <deep-learning-detection>
-However, those methods are either highly dependent on engineering the correct priors, such as the Haar-like features, or limited to binary classification scenarios, as is the case for #acr("HOG")-based #acrpl("SVM"). Thus, newer Object Detection methods employ more complex deep-learning architectures that require less manual feature engineering. The best-performing models nowadays are #acrpl("ViT") using Attention mechanisms @dosovitskiyImageWorth16x162021 to learn relationships between patterns in different parts of images. However, they will not be further examined in this thesis, due to computational constraints that make them unfeasible for the edge-deployable solution sought in this work @dosovitskiyImageWorth16x162021.
+However, those methods are either highly dependent on engineering the correct priors, such as the Haar-like features, or limited to binary classification scenarios, as is the case for #acr("HOG")-based #acrpl("SVM") @cortesSupportvectorNetworks1995. Thus, newer Object Detection methods employ more complex deep-learning architectures that require less manual feature engineering. The best-performing models nowadays are #acrpl("ViT") using Attention mechanisms @dosovitskiyImageWorth16x162021 to learn relationships between patterns in different parts of images. However, they will not be further examined in this thesis, due to computational constraints that make them unfeasible for the edge-deployable solution sought in this work @dosovitskiyImageWorth16x162021.
 
 Relevant for this examination are their predecessors, #acrpl("CNN"). The main mechanism they use to extract information from images are convolutional layers. Those convolutional layers get passed an image in the form of a tensor and perform matrix multiplication on that input tensor and a kernel tensor in a sliding window fashion to compute subsequent feature maps. Those will be passed on as input to the next layer. @lecunHandwrittenDigitRecognition1989
 
@@ -179,10 +180,10 @@ $<residual-fn>
 
 #figure(
   image("assets/res_layer.png", width: 40%),
-  caption: [Residual layer composed of layers with functions $f$ and $g$ with a shortcut connection],
+  caption: [Residual layer composed of layers with functions $f$ and $g$ with a shortcut connection, inspired by @heDeepResidualLearning2015],
   gap: 10pt,
   placement: top
-)
+)<residual-graphic>
 
 If the function $F$ is a composite function $F(x) = f(g(x))$, then @residual-fn can be transformed as seen in @residual-derivative to attain the derivative of $accent(y, hat)$ with respect to $x$, which given by the chain rule from @chain-rule.
 $
@@ -365,7 +366,7 @@ Since thermal images might exhibit either polarity, inverting one of the channel
 Since most #acr("CNN") architectures and pretrained weights are optimized for detecting darker objects (edges, shadows) against lighter backgrounds in #acr("RGB") imagery, thermal images with inverted polarity may not align with these learned features @hudaEffectDiverseDataset2020. Polarity inversion preprocessing ensures consistent object-background contrast relationships by applying a simple pixel-wise transformation according to @inversion-eqn.
 
 $
-  I_"inverted"(x,y) = 1.0 - I_"original"(x,y)
+  I_"inverted" = 1.0 - I_"original"
 $<inversion-eqn>
 
 Here, the constant $1.0$ is chosen simply to ensure quick computation of the inverted channel and because it lies close to the maximum pixel intensity after normalization.
@@ -427,11 +428,37 @@ This study employs a systematic experimental approach to evaluate the effectiven
 - Statistical significance testing approach
 
 == Dataset Description <dataset>
-Details the thermal image datasets (FLIR ADAS v2, AAU-PD-T, OSU-T, M3FD, KAIST-CVPR15) and their characteristics.
+
+The experimental evaluation employs five complementary thermal datasets that collectively provide comprehensive coverage of diverse infrared imaging scenarios and human detection challenges. FLIR ADAS v2 @FREEFLIRThermal contributes automotive-focused thermal imagery with high thermal contrast between human subjects and vehicle/road backgrounds, captured at various distances typical of roadside surveillance.
+
+AAU-PD-T @hudaEffectDiverseDataset2020 provides controlled pedestrian detection imagery with consistent thermal signatures and systematic annotation quality, establishing reliable benchmarks for model performance assessment. OSU-T @davisTwoStageTemplateApproach2005 delivers outdoor thermal surveillance scenarios with natural environmental temperature variations and diverse background thermal signatures that challenge model generalization capabilities. M3FD @liuTargetawareDualAdversarial2022 offers thermal imagery with varying ambient conditions where human thermal signatures exhibit different polarities relative to background temperatures. KAIST-CVPR15 @hwangMultispectralPedestrianDetection2015 contributes thermal pedestrian data captured across different times of day, providing varying ambient thermal conditions that affect human-background contrast relationships. This combination ensures robust evaluation across varying thermal polarities, environmental temperature conditions, subject distances, and thermal contrast scenarios, creating a balanced compound dataset that reflects real-world thermal surveillance requirements while minimizing dataset-specific biases that could compromise model generalizability across diverse infrared imaging conditions.
+
+#figure(
+  caption: [Thermal dataset characteristics and specifications],
+  table(
+    columns: (auto, auto, auto, auto, auto, auto),
+    inset: 8pt,
+    align: horizon,
+    table.header(
+      [*Dataset*],
+      [*Images*],
+      [*Resolution*],
+      [*Environment*],
+      [*Thermal Polarity*],
+      [*Key Characteristics*],
+    ),
+
+    [FLIR ADAS v2], [\~10,000], [640×512], [Automotive/Road], [Mixed], [Vehicle-mounted, varying distances, high contrast],
+    [AAU-PD-T], [\~2,000], [640×480], [Controlled outdoor], [Consistent], [Systematic annotation, benchmark quality],
+    [OSU-T], [\~1,800], [320×240], [Natural outdoor], [Variable], [Seasonal variations, diverse backgrounds],
+    [M3FD], [\~4,200], [640×512], [Mixed conditions], [Variable], [Ambient temperature variations],
+    [KAIST-CVPR15], [\~95,000], [640×512], [Urban pedestrian], [Time-dependent], [Day/night cycles, large scale],
+  ),
+)<dataset-table>
 
 == Model Implementation <model-impl>
 
-The base architecture, SSD300, is implemented with two distinct backbone networks: VGG16 and ResNet152. Each backbone is evaluated in two initialization scenarios: pretrained on ImageNet and trained from scratch on thermal imagery.
+The base architecture, #acr("SSD")300, is implemented with two distinct backbone networks: VGG16 and ResNet152. Each backbone is evaluated in two initialization scenarios: pretrained on ImageNet and trained from scratch only on thermal imagery.
 
 Since the normalization applied to the input images is skewed by the preprocessing techniques mentioned above, the backbone networks are equipped with an additional #acr("BN") layer that allow the network to learn an optimal normalization for specific characteristics of their respective preprocessing setup.
 
@@ -453,10 +480,10 @@ Prediction heads are positioned before each max-pooling layer, after both of the
 A detailed visualization of the #ssd-vgg architecture is shown in @initial-vgg-image.
 
 #figure(
-  image("assets/VGG.png", width: 100%, fit: "cover"),
-  caption: [The initial #ssd-vgg architecture initially used. \"ConvX_Y\" names a series of convolutional layers preceded by a maxpooling layer. The individual layers are not visualized as they do not affect feature map dimensions.],
+  image("assets/vgg.png", width: 100%, fit: "cover"),
+  caption: [The initial #ssd-vgg architecture],
 )<initial-vgg-image>
-
+\"ConvX_Y\" names a series of convolutional layers preceded by a maxpooling layer. The individual layers are not visualized as they do not affect feature map dimensions.
 
 #figure(
   caption: [#ssd-vgg anchor boxes],
@@ -466,7 +493,7 @@ A detailed visualization of the #ssd-vgg architecture is shown in @initial-vgg-i
     align: horizon,
     table.header(
       [*Feature Map*],
-      [*Dims*],
+      [*Dimensions*],
       [*Scale*],
       [*Aspect Ratios*],
       [*Priors*],
@@ -482,7 +509,7 @@ A detailed visualization of the #ssd-vgg architecture is shown in @initial-vgg-i
     [*Grand total*], [-], [-], [-], [-], [*8732*],
   ),
 )<priors-vgg>
-
+In this table, "Dims" is short for Dimensions for formatting reasons, the scale and aspect ratios combined result in the default scaling ratios for each respective prior and the extra prior has a 
 
 === #acrf("ResNet") Backbone Implementation<resnet-backbone>
 
@@ -497,7 +524,7 @@ As described in @vgg-backbone, the #ssd-resnet is also later adapted to apply #a
   caption: [The initial SSD-ResNet architecture],
 )<initial-resnet-image>
 
-\"LayerX\" in the architecture diagram names a series of convolutional bottleneck blocks - for a more detailed description of the individual layers and blocks, refer to @ResNetV15PyTorch and @backbone-networks. It is important to keep in mind that despite the #ssd-resnet diagram appearing less complex than that of #ssd-vgg, it is actually significantly deeper, as noted in the aforementioned @backbone-networks and also made apparent by comparing @priors-resnet and @priors-vgg.
+\"LayerX\" in the architecture diagram names a series of convolutional bottleneck blocks - for a more detailed description of the individual layers and blocks, refer to @ResNetV15PyTorch and @backbone-networks. It is important to keep in mind that despite the #ssd-resnet diagram appearing less complex than that of #ssd-vgg, it is actually significantly deeper, as noted in the aforementioned @backbone-networks and also made apparent by compqaring @priors-resnet and @priors-vgg.
 
 #figure(
   caption: [#ssd-resnet anchor boxes],
@@ -507,7 +534,7 @@ As described in @vgg-backbone, the #ssd-resnet is also later adapted to apply #a
     align: horizon,
     table.header(
       [*Feature Map*],
-      [*Dims*],
+      [*Dimensions*],
       [*Scale*],
       [*Aspect Ratios*],
       [*Priors*],
