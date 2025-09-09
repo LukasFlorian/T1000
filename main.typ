@@ -177,6 +177,13 @@ $
   accent(y, hat) = F(x) + x
 $<residual-fn>
 
+#figure(
+  image("assets/res_layer.png", width: 40%),
+  caption: [Residual layer composed of layers with functions $f$ and $g$ with a shortcut connection],
+  gap: 10pt,
+  placement: top
+)
+
 If the function $F$ is a composite function $F(x) = f(g(x))$, then @residual-fn can be transformed as seen in @residual-derivative to attain the derivative of $accent(y, hat)$ with respect to $x$, which given by the chain rule from @chain-rule.
 $
   accent(y, hat)'(x) &= F'(x) + x'\
@@ -412,7 +419,6 @@ This study employs a systematic experimental approach to evaluate the effectiven
 
 *Key areas to develop:*
 - Dataset description: FLIR ADAS v2, AAU-PD-T, OSU-T, M3FD, KAIST-CVPR15
-- Model configurations: SSD300-VGG16 vs. SSD300-ResNet152
 - Training setup: Pretrained vs. scratch initialization strategies
 - Preprocessing techniques: Image inversion and edge enhancement
 - Data augmentation and split strategies (train/validation/test)
@@ -432,6 +438,10 @@ Since the normalization applied to the input images is skewed by the preprocessi
 Any specifics about the specific implementation details that are not mentioned in this documentation can be found in the #link("https://github.com/LukasFlorian/Thermal-Image-Human-Detection.git", "source code repository"), mostly in `/src/model/models.py`.
 
 === #acrf("VGG") Backbone Implementation<vgg-backbone>
+
+#let ssd-vgg = [#acr("SSD")-#acr("VGG")16]
+#let ssd-resnet = [#acr("SSD")-#acr("ResNet")152]
+
 For the #acr("SSD") network with #acr("VGG")-16 backbone, the default anchor box configuration from the original implementation @liuSSDSingleShot2016 is used.
 To reduce computational complexity, the #acr("FC") layers are removed and replaced with an additional two convolutions. Since those convolutions encompass fewer parameters than the original #acr("FC") layers, the pre-trained models use a subset of the #acr("FC") parameters and organize them in a dilated convolutional kernel. The very last #acr("FC") layer is entirely discarded, as it only generated the final class prediction when #acr("VGG") is used as an ImageNet classifier.
 
@@ -440,22 +450,79 @@ The backbone base network is followed by a smaller auxiliary network of four seq
 Prediction heads are positioned before each max-pooling layer, after both of the final convolutional layers of the base network, and after all four convolution pairs of the auxiliary network. Each prediction head consists of two convolutional layers; one for bounding box regression and one for class prediction @liuSSDSingleShot2016. These six prediction heads amount to a total of 8732 anchors for detection attempts.
 
 
-A detailed visualization of the #acr("SSD")-#acr("VGG")16 architecture is shown in @initial-vgg-image.
+A detailed visualization of the #ssd-vgg architecture is shown in @initial-vgg-image.
 
 #figure(
   image("assets/VGG.png", width: 100%, fit: "cover"),
-  caption: "The SSD-VGG architecture initially used.",
+  caption: [The initial #ssd-vgg architecture initially used. \"ConvX_Y\" names a series of convolutional layers preceded by a maxpooling layer. The individual layers are not visualized as they do not affect feature map dimensions.],
 )<initial-vgg-image>
 
-Later model configurations set the number of output channels for the class prediction convolutions to 1 instead of 2, replace the softmax activation function with a sigmoid function and employ one #acr("BN") layer at the beginning of each prediction head. The reasons for this are explained in detail in @training-perf.
 
-*TODO: Make visualization clearer with prior num annotation*
+#figure(
+  caption: [#ssd-vgg anchor boxes],
+  table(
+    columns: (auto, auto, auto, auto, auto, auto),
+    inset: 10pt,
+    align: horizon,
+    table.header(
+      [*Feature Map*],
+      [*Dims*],
+      [*Scale*],
+      [*Aspect Ratios*],
+      [*Priors*],
+      [*Total Priors*],
+    ),
+
+    [Conv4_3], [38 x 38], [0.1], [1:1, 2:1, 1:2, extra prior], [4], [5776],
+    [Conv7], [19 x 19], [0.2], [1:1, 2:1, 1:2, 3:1, 1:3, extra prior], [6], [2166],
+    [Conv8_2], [10 x 10], [0.375], [1:1, 2:1, 1:2, 3:1, 1:3, extra prior], [6], [600],
+    [Conv9_2], [5 x 5], [0.55], [1:1, 2:1, 1:2, 3:1, 1:3, extra prior], [6], [150],
+    [Conv10_2], [3 x 3], [0.725], [1:1, 2:1, 1:2, extra prior], [4], [36],
+    [Conv11_2], [1 x 1], [0.9], [1:1, 2:1, 1:2, extra prior], [4], [4],
+    [*Grand total*], [-], [-], [-], [-], [*8732*],
+  ),
+)<priors-vgg>
+
 
 === #acrf("ResNet") Backbone Implementation<resnet-backbone>
 
 The #acr("ResNet")-152 architecture does not entirely replicate that from the original paper @heDeepResidualLearning2015. Instead, it uses that from the PyTorch implementation, which is known as #acr("ResNet") v1.5 and has been shown to outperform the original architecture @ResNetV15PyTorch. The final #acr("FC") layer and average pooling layer are discarded, as they only serve the prediction in image classification, and are replaced by a single convolutional layer.
 
-In the initial setup, prediction heads are placed on top of each of the major building blocks that double the number of channels. Furthermore, one last auxiliary layer is 
+In the initial setup, prediction heads are placed on top of each of the major building blocks doubling the number of channels. Furthermore, one last auxiliary layer is added in order to attain an additional high-scale feature map. For the sake of simplicity, the single auxiliary layer is implemented as part of the #acr("ResNet") base network
+
+As described in @vgg-backbone, the #ssd-resnet is also later adapted to apply #acr("BN") to the inputs to the prediction heads and to perform logistic regression using the sigmoid function by dropping the background class.
+
+#figure(
+  image("assets/resnet.png", width: 100%, fit: "cover"),
+  caption: [The initial SSD-ResNet architecture],
+)<initial-resnet-image>
+
+\"LayerX\" in the architecture diagram names a series of convolutional bottleneck blocks - for a more detailed description of the individual layers and blocks, refer to @ResNetV15PyTorch and @backbone-networks. It is important to keep in mind that despite the #ssd-resnet diagram appearing less complex than that of #ssd-vgg, it is actually significantly deeper, as noted in the aforementioned @backbone-networks and also made apparent by comparing @priors-resnet and @priors-vgg.
+
+#figure(
+  caption: [#ssd-resnet anchor boxes],
+  table(
+    columns: (auto, auto, auto, auto, auto, auto),
+    inset: 10pt,
+    align: horizon,
+    table.header(
+      [*Feature Map*],
+      [*Dims*],
+      [*Scale*],
+      [*Aspect Ratios*],
+      [*Priors*],
+      [*Total Priors*],
+    ),
+
+    [Layer1], [75 x 75], [0.05], [1:1, 2:1, 1:2], [3], [16875],
+    [Layer2], [38 x 38], [0.1], [1:1, 2:1, 1:2, extra prior], [4], [5776],
+    [Layer3], [19 x 19], [0.2], [1:1, 2:1, 1:2, 3:1, 1:3, extra prior], [6], [2166],
+    [Layer4], [10 x 10], [0.375], [1:1, 2:1, 1:2, 3:1, 1:3, extra prior], [6], [600],
+    [Aux_Layer], [5 x 5], [0.55], [1:1, 2:1, 1:2, 3:1, 1:3, extra prior], [6], [150],
+    [*Grand total*], [-], [-], [-], [-], [*25567*],
+  ),
+)<priors-resnet>
+
 
 
 == Later Developments <later-devs>
@@ -469,6 +536,13 @@ $
 $<sigmoid-eqn>@dubeyActivationFunctionsDeep2022
 
 Additionally, later developed variants of the model utilize #acr("BN") layers in the prediction heads before passing on the input they get to the convolutional layers. The reasons for this will be explained based on the training results in @training-perf.
+
+*
+TODO: VGG + RESNET adaptations of:
+- prior boxes
+- test
+*
+// VGG: Later model configurations halve the number of output channels for the class prediction convolutions, effectively reducing the number of classes to 1, replace the softmax activation function with a sigmoid function and employ one #acr("BN") layer at the beginning of each prediction head. The reasons for this are explained in detail in @training-perf.
 
 == Experimental Design <exp-design>
 Outlines the systematic approach to comparing model variants and the evaluation framework.
@@ -512,7 +586,7 @@ The experimental results provide valuable insights into the practical applicabil
 - Future optimization potential and research directions
 
 == Model Performance Comparison <model-comparison>
-Compares SSD-VGG and SSD-ResNer performance and discusses trade-offs between accuracy and computational efficiency.
+Compares #ssd-vgg and SSD-ResNer performance and discusses trade-offs between accuracy and computational efficiency.
 
 == Practical Deployment Considerations <deployment>
 Discusses real-world application scenarios and system requirements for thermal surveillance.
@@ -533,10 +607,7 @@ This thesis has systematically evaluated the application of Single Shot MultiBox
 
 = Appendix <Appendix>
 == Figures <figures>
-#figure(
-  image("assets/VGG.png", width: 100%, fit: "cover"),
-  caption: "The SSD-VGG architecture initially used.",
-)
+
 
 === Tables <table-example>
 
