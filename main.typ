@@ -180,9 +180,8 @@ $<residual-fn>
 
 #figure(
   image("assets/res_layer.png", width: 40%),
-  caption: [Residual layer composed of layers with functions $f$ and $g$ with a shortcut connection, inspired by @heDeepResidualLearning2015],
-  gap: 10pt,
-  placement: top
+  caption: [Residual layer composed of layers with functions $f$ and $g$ with a shortcut connection],
+  gap: 10pt
 )<residual-graphic>
 
 If the function $F$ is a composite function $F(x) = f(g(x))$, then @residual-fn can be transformed as seen in @residual-derivative to attain the derivative of $accent(y, hat)$ with respect to $x$, which given by the chain rule from @chain-rule.
@@ -646,7 +645,7 @@ As described in @vgg-backbone, the #ssd-resnet is also later adapted to apply #a
 
 #figure(
   image("assets/resnet.png", width: 100%, fit: "cover"),
-  caption: [The initial SSD-ResNet architecture],
+  caption: [The initial #ssd-resnet architecture],
 )<initial-resnet-image>
 
 ,\"LayerX,\" in the architecture diagram names a series of convolutional bottleneck blocks - for a more detailed description of the individual layers and blocks, refer to @ResNetV15PyTorch and @backbone-networks. It is important to keep in mind that despite the #ssd-resnet diagram appearing less complex than that of #ssd-vgg, it is actually significantly deeper, as noted in the aforementioned @backbone-networks and also made apparent by compqaring @priors-resnet and @priors-vgg.
@@ -680,7 +679,7 @@ As described in @vgg-backbone, the #ssd-resnet is also later adapted to apply #a
 == Later Developments <later-devs>
 
 === Sigmoid Activation Function <sigmoid-setup>
-Initially, the activation function used for the prediction heads is the softmax function. However, since the network only needs to predict only two classes, peerson and background, the softmax function is later replaced with the sigmoid function from @sigmoid-eqn that outputs a single value between 0 and 1, representing the probability of the input being a person. This change is done in response to training results and is supposed to improve the performance of the network as it does not require the model to learn the more complex relationship between its outputs in the softmax function.
+Initially, the activation function used for the prediction heads is the softmax function. However, since the network needs to predict only two classes, person and background, the softmax function is later replaced with the sigmoid function from @sigmoid-eqn that outputs a single value between 0 and 1, representing the probability of the person class. This change is done in response to training results and is supposed to improve the performance of the network as it does not require the model to learn the more complex relationship between its outputs in the softmax function.
 
 
 $
@@ -689,12 +688,17 @@ $<sigmoid-eqn>@dubeyActivationFunctionsDeep2022
 
 Additionally, later developed variants of the model utilize #acr("BN") layers in the prediction heads before passing on the input they get to the convolutional layers. The reasons for this will be explained based on the training results in @training-perf.
 
-*
-TODO: VGG + RESNET adaptations of:
-- prior boxes
-- test
-*
-// VGG: Later model configurations halve the number of output channels for the class prediction convolutions, effectively reducing the number of classes to 1, replace the softmax activation function with a sigmoid function and employ one #acr("BN") layer at the beginning of each prediction head. The reasons for this are explained in detail in @training-perf.
+=== #ssd-resnet anchor box configuration
+Additionally, the #ssd-vgg variations exhibit better training behavior than the #ssd-resnet models (for more details, refer to @training-perf) in their initial configuration. With a major architectural difference lying in the additional priors that #ssd-resnet applies on the feature maps of layer 1 with dimensions of 75x75, those priors are later removed, such that computational overhead is reduced and the learning process is guided towards higher-scale features of the subsequent layers.
+
+Simultaneously, new priors with the aspect ratios 3:1 and 1:3 are added to the prediction head on top of layer 2.
+
+=== #acr("BN") layers in prediction heads
+Lastly, to improve convergence behavior and ensure proper feature scaling across all layers, the prediction heads of both the #ssd-resnet and #ssd-vgg models get #acr("BN") layers that normalize inputs before further processing to attain predictions.
+
+== Training Procedure
+
+*TODO: MPT explanation*
 
 == Experimental Design <exp-design>
 Outlines the systematic approach to comparing model variants and the evaluation framework.
