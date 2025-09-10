@@ -187,14 +187,14 @@ $<residual-fn>
 
 If the function $F$ is a composite function $F(x) = f(g(x))$, then @residual-fn can be transformed as seen in @residual-derivative to attain the derivative of $accent(y, hat)$ with respect to $x$, which given by the chain rule from @chain-rule.
 $
-  accent(y, hat)'(x) &= F'(x) + x'\
+  accent(y, hat)'(x) &= F'(x) + x',\
   &= f'(g(x)) dot g'(x) + 1
 $<residual-derivative>
 Here, the derivative of $x$ with respect to itself is 1. In reality, $x$ would be the result of a previous layer's function $h(x_0)$, which implies for the derivative of $accent(y, hat)$ with respect to $x_0$ the relationship introduced in @derivative-chain.
 $
-  accent(y, hat)(x)' &= accent(y, hat)(h(x_0))'\
-  &= accent(y, hat)'(h(x_0)) dot h'(x_0)\
-  &= (F'(h(x_0)) + 1) dot h'(x_0)\
+  accent(y, hat)(x)' &= accent(y, hat)(h(x_0))',\
+  &= accent(y, hat)'(h(x_0)) dot h'(x_0),\
+  &= (F'(h(x_0)) + 1) dot h'(x_0),\
   &= f'(g(h(x_0))) dot g'(h(x_0)) dot h'(x_0) + h'(x_0)
 $<derivative-chain>
 It becomes apparent that introducing residual layers and identity shortcuts helps to mitigate the #acr("VGP") by preserving the gradient with respect to previous layers' outputs without multiplying them with many small derivatives of subsequent layers. $F(x)$ can be an arbitrarily deep function and the gradient with respect to $x_0$ will still be $h'(x_0)$ plus a term that is multiplied by the derivatives of the residual function $F(x)$. This is in contrast to the gradient in a standard #acr("CNN") where repeated application of the chain rule is likely to cause the gradient to vanish.
@@ -434,72 +434,134 @@ The experimental evaluation employs five complementary thermal datasets that col
 #figure(
   caption: [Comprehensive thermal dataset specifications and characteristics],
   table(
-    columns: (auto, auto, auto, auto, auto, auto, auto, auto),
+    columns: (auto, auto, auto, auto, 17%),
     inset: 6pt,
-    align: horizon,
+    align: (x, y) => if y == 0 {center + horizon} else if x == 0 {left + horizon} else {center + horizon},
     table.header(
       [*Dataset*],
       [*Resolution*],
-      [*Images*],
-      [*Data Splits*],
       [*Environment*],
       [*Camera Setup*],
-      [*Annotated Classes*],
-      [*Objects*],
+      [*Annotated Classes*]
     ),
 
     [FLIR ADAS v2], 
     [640×512], 
-    [10,495], 
-    [Train/Val/Test],
-    [Automotive roads, urban/highway, day/night, adverse weather],
-    [Vehicle-mounted, forward-facing],
-    [Person, car, bicycle, other vehicle, animal],
-    [~98,000],
+    [Automotive roads,\ urban/highway,\ day/night,\ adverse weather],
+    [Vehicle-mounted,\ forward-facing],
+    [Person\ Car\ Bicycle\ Other vehicle\ Animal],
 
     [AAU-PD-T], 
     [640×480], 
-    [2,941],
-    [Train: 1,941\nTest: 1,000],
-    [Controlled outdoor sports fields, winter conditions],
+    [Controlled outdoor sports fields,\ winter conditions],
     [Elevated stationary (9m height)],
     [Person],
-    [7,809],
 
     [OSU-T], 
-    [320×240], 
-    [17,373],
-    [Test only],
-    [University campus, natural outdoor pedestrian areas],
+    [360×240], 
+    [University campus,\ natural outdoor pedestrian areas],
     [Elevated stationary (building rooftop, 3 stories)],
     [Person],
-    [~15,000],
 
     [M3FD Detection], 
-    [640×512], 
-    [4,200],
-    [Train: 3,780\nTest: 420],
-    [Urban driving, challenging visibility conditions],
+    [1024×768], 
+    [Urban driving,\ challenging visibility conditions],
     [Vehicle-mounted dual-modal],
-    [Person, vehicle, bicycle, traffic objects],
-    [~25,000],
+    [Person\ Car\ Bus\ Motorcycle\ Lamp\ Truck],
 
     [KAIST-CVPR15], 
     [640×512], 
-    [95,328],
-    [Train/Val subsets],
-    [Urban pedestrian scenarios, day/night cycles],
-    [Vehicle roof-mounted, ego-centric],
-    [Person, people, cyclist],
-    [103,128],
+    [Urban pedestrian scenarios,\ day/night cycles],
+    [Vehicle roof-mounted,\ ego-centric],
+    [Person\ People\ Cyclist],
   ),
-)<dataset-table>
+)<dataset-metadata-table>
 
 The dataset selection strategy addresses several critical requirements for developing a robust thermal human detection system. FLIR ADAS v2 @FREEFLIRThermal provides automotive-focused thermal imagery with high thermal contrast between human subjects and vehicle/road backgrounds, captured at various distances typical of roadside surveillance applications. The dataset's vehicle-mounted perspective and diverse geographic coverage (Santa Barbara, San Francisco, London, Paris, Spanish cities) ensures exposure to varying ambient temperatures and thermal background conditions that challenge model generalization.
 
-The datasets used are specifically selected to form a comprehensive compound training dataset that aims to cover a large v *TODO: CONTINUE HERE - AND REPLACE TABLE DATA WITH CUSTOM SPLITS*
+The datasets utilized in this project are specifically selected to form a comprehensive compound training dataset that aims to cover a large variety of scenarios in order to train a model that is as generally applicable as possible. Since the objective of this project is specifically to detect humans, the annotations are reduced to the Person class, with the exception of KAIST-CVPR15. There, the People and Cyclist labels are converted to the Person label and also taken into account during training, as the distinction whether a Person is also a cyclist or not is not relevant in this application. @dataset-split-table provides an overview of the splits applied to the different datasets.
 
-AAU-PD-T @hudaEffectDiverseDataset2020 contributes controlled pedestrian detection imagery with systematic annotation quality and consistent thermal signatures, establishing reliable benchmarks for model performance assessment. The elevated camera perspective and sports field environment provide scenarios with minimal thermal background clutter, enabling evaluation of pure human detection capabilities without complex environmental interference.
+#figure(
+  caption: [Comprehensive thermal dataset specifications and characteristics],
+  table(
+    columns: (19%, 13.5%, 13.5%, 13.5%, 13.5%, 13.5%, 13.5%),
+    inset: 6pt,
+    align: (x, y) => if y == 0 {center + horizon} else if x == 0 {left + horizon} else {center + horizon},
+    
+    table.cell(rowspan: 2, [*Dataset*]),
+    table.cell(colspan: 3, [*Images per split*]),
+    table.cell(colspan: 3, [*Objects per split*]),
+
+    [*Train*],
+    [*Val*],
+    [*Test*],
+    [*Train*],
+    [*Val*],
+    [*Test*],
+
+    [FLIR ADAS v2],
+    // Images
+    [8205],
+    [3681],
+    [3749],
+    // Objects
+    [50478],
+    [4470],
+    [12323],
+    
+
+    [AAU-PD-T], 
+    // Images
+    [706],
+    [1235],
+    [1000],
+    // Objects
+    [5572],
+    [0],
+    [2237],
+    
+
+    [OSU-T], 
+    // Images
+    [0],
+    [0],
+    [284],
+    // Objects
+    [0],
+    [0],
+    [984],
+    
+
+    [M3FD Detection], 
+    // Images
+    [2520],
+    [840],
+    [840],
+    // Objects
+    [18231],
+    [5803],
+    [5739],
+    
+
+    [KAIST-CVPR15], 
+    // Images
+    [8815],
+    [1909],
+    [1787],
+    // Objects
+    [20024],
+    [1661],
+    [2186],
+    table.hline(stroke: 2pt),
+    [*Overall:*],
+    [20246], [7665]
+  ),
+)<dataset-split-table>
+
+
+Since the datasets may contain images without any objects, the training split of the *TODO: CONTINUE HERE - AND REPLACE TABLE DATA WITH CUSTOM SPLITS*
+
+The AAU-PD-T dataset @hudaEffectDiverseDataset2020 contributes controlled pedestrian detection imagery with small subjects far away from the camera. The elevated perspective and sports field environment provide scenarios with minimal thermal background clutter, enabling evaluation of pure human detection capabilities without complex environmental interference and mimicking an angle that is typical of surveillance scenarios. However, not all images in the dataset contain objects, which may lead to errors due to undefined loss values of the loss function.
 
 OSU-T @davisTwoStageTemplateApproach2005 delivers outdoor thermal surveillance scenarios with natural environmental temperature variations and diverse background thermal signatures that challenge model generalization capabilities. The university campus setting provides realistic pedestrian detection scenarios with varying crowd densities and complex thermal backgrounds from buildings, vegetation, and infrastructure.
 
@@ -540,7 +602,7 @@ A detailed visualization of the #ssd-vgg architecture is shown in @initial-vgg-i
   image("assets/vgg.png", width: 100%, fit: "cover"),
   caption: [The initial #ssd-vgg architecture],
 )<initial-vgg-image>
-\"ConvX_Y\" names a series of convolutional layers preceded by a maxpooling layer. The individual layers are not visualized as they do not affect feature map dimensions.
+,\"ConvX_Y,\" names a series of convolutional layers preceded by a maxpooling layer. The individual layers are not visualized as they do not affect feature map dimensions.
 
 #figure(
   caption: [#ssd-vgg anchor boxes],
@@ -572,7 +634,7 @@ In this table, "Dims" is short for Dimensions for formatting reasons, the scale 
 
 The #acr("ResNet")-152 architecture does not entirely replicate that from the original paper @heDeepResidualLearning2015. Instead, it uses that from the PyTorch implementation, which is known as #acr("ResNet") v1.5 and has been shown to outperform the original architecture @ResNetV15PyTorch. The final #acr("FC") layer and average pooling layer are discarded, as they only serve the prediction in image classification, and are replaced by a single convolutional layer.
 
-In the initial setup, prediction heads are placed on top of each of the major building blocks doubling the number of channels. Furthermore, one last auxiliary layer is added in order to attain an additional high-scale feature map. For the sake of simplicity, the single auxiliary layer is implemented as part of the #acr("ResNet") base network
+In the initial setup, prediction heads are placed on top of each of the major building blocks doubling the number of channels. Furthermore, one last auxiliary layer is added in order to attain an additional high-scale feature map. For the sake of simplicity, the single auxiliary layer is implemented as part of the #acr("ResNet") base network.
 
 As described in @vgg-backbone, the #ssd-resnet is also later adapted to apply #acr("BN") to the inputs to the prediction heads and to perform logistic regression using the sigmoid function by dropping the background class.
 
@@ -581,7 +643,7 @@ As described in @vgg-backbone, the #ssd-resnet is also later adapted to apply #a
   caption: [The initial SSD-ResNet architecture],
 )<initial-resnet-image>
 
-\"LayerX\" in the architecture diagram names a series of convolutional bottleneck blocks - for a more detailed description of the individual layers and blocks, refer to @ResNetV15PyTorch and @backbone-networks. It is important to keep in mind that despite the #ssd-resnet diagram appearing less complex than that of #ssd-vgg, it is actually significantly deeper, as noted in the aforementioned @backbone-networks and also made apparent by compqaring @priors-resnet and @priors-vgg.
+,\"LayerX,\" in the architecture diagram names a series of convolutional bottleneck blocks - for a more detailed description of the individual layers and blocks, refer to @ResNetV15PyTorch and @backbone-networks. It is important to keep in mind that despite the #ssd-resnet diagram appearing less complex than that of #ssd-vgg, it is actually significantly deeper, as noted in the aforementioned @backbone-networks and also made apparent by compqaring @priors-resnet and @priors-vgg.
 
 #figure(
   caption: [#ssd-resnet anchor boxes],
@@ -710,8 +772,8 @@ This thesis has systematically evaluated the application of Single Shot MultiBox
     text("cylinder.svg"),
     $ pi h (D^2 - d^2) / 4 $,
     [
-      $h$: height \
-      $D$: outer radius \
+      $h$: height ,\
+      $D$: outer radius ,\
       $d$: inner radius
     ],
 
