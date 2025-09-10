@@ -429,7 +429,7 @@ This study employs a systematic experimental approach to evaluate the effectiven
 
 == Dataset Description <dataset>
 
-The experimental evaluation employs five complementary thermal datasets that collectively provide comprehensive coverage of diverse infrared imaging scenarios and human detection challenges. The strategic selection of these datasets addresses the fundamental objective of creating a robust, generalizable detection system capable of operating across varying environmental conditions, camera configurations, and thermal imaging scenarios that are representative of real-world surveillance applications.
+The experimental evaluation employs five complementary thermal datasets that collectively provide comprehensive coverage of diverse infrared imaging scenarios and human detection challenges. The strategic selection of these datasets addresses the fundamental objective of creating a robust, generalizable detection system capable of operating across varying environmental conditions, camera configurations, and thermal imaging scenarios that are representative of real-world surveillance applications. @dataset-metadata-table provides a general overview of the different datasets.
 
 #figure(
   caption: [Comprehensive thermal dataset specifications and characteristics],
@@ -445,31 +445,31 @@ The experimental evaluation employs five complementary thermal datasets that col
       [*Annotated Classes*]
     ),
 
-    [FLIR ADAS v2], 
+    [FLIR ADAS v2 @FREEFLIRThermal], 
     [640×512], 
     [Automotive roads,\ urban/highway,\ day/night,\ adverse weather],
     [Vehicle-mounted,\ forward-facing],
-    [Person\ Car\ Bicycle\ Other vehicle\ Animal],
+    [Person\ Vehicles\ Other objects],
 
-    [AAU-PD-T], 
+    [AAU-PD-T @hudaEffectDiverseDataset2020], 
     [640×480], 
     [Controlled outdoor sports fields,\ winter conditions],
     [Elevated stationary (9m height)],
     [Person],
 
-    [OSU-T], 
+    [OSU-T @davisTwoStageTemplateApproach2005], 
     [360×240], 
     [University campus,\ natural outdoor pedestrian areas],
     [Elevated stationary (building rooftop, 3 stories)],
     [Person],
 
-    [M3FD Detection], 
+    [M3FD Detection @liuTargetawareDualAdversarial2022], 
     [1024×768], 
     [Urban driving,\ challenging visibility conditions],
     [Vehicle-mounted dual-modal],
-    [Person\ Car\ Bus\ Motorcycle\ Lamp\ Truck],
+    [Person\ Vehicles\ Lamp],
 
-    [KAIST-CVPR15], 
+    [KAIST-CVPR15 @hwangMultispectralPedestrianDetection2015], 
     [640×512], 
     [Urban pedestrian scenarios,\ day/night cycles],
     [Vehicle roof-mounted,\ ego-centric],
@@ -477,19 +477,32 @@ The experimental evaluation employs five complementary thermal datasets that col
   ),
 )<dataset-metadata-table>
 
-The dataset selection strategy addresses several critical requirements for developing a robust thermal human detection system. FLIR ADAS v2 @FREEFLIRThermal provides automotive-focused thermal imagery with high thermal contrast between human subjects and vehicle/road backgrounds, captured at various distances typical of roadside surveillance applications. The dataset's vehicle-mounted perspective and diverse geographic coverage (Santa Barbara, San Francisco, London, Paris, Spanish cities) ensures exposure to varying ambient temperatures and thermal background conditions that challenge model generalization.
+Since this thesis is on the detection of humans, the annotations are reduced to contain only the person label. All other labels are either discarded or, in the case of KAIST-CVPR15, converted. Note that "Vehicles" and "Other Objects" in @dataset-metadata-table serve as placeholders for the actual classes that are not listed in detail for the aforementioned reasons.
 
-The datasets utilized in this project are specifically selected to form a comprehensive compound training dataset that aims to cover a large variety of scenarios in order to train a model that is as generally applicable as possible. Since the objective of this project is specifically to detect humans, the annotations are reduced to the Person class, with the exception of KAIST-CVPR15. There, the People and Cyclist labels are converted to the Person label and also taken into account during training, as the distinction whether a Person is also a cyclist or not is not relevant in this application. @dataset-split-table provides an overview of the splits applied to the different datasets.
+*FLIR ADAS v2* @FREEFLIRThermal provides automotive-focused thermal imagery with high thermal contrast between human subjects and vehicle/road backgrounds, captured at various distances typical of roadside surveillance applications. The dataset's vehicle-mounted perspective and diverse geographic coverage (Santa Barbara, San Francisco, London, Paris, Spanish cities) ensures exposure to varying ambient temperatures and thermal background conditions that challenge model generalization. The default test split of the dataset is preserved for the sake of scientific comparability; however, since not all images contain objects after filtering out all classes except for the person label, empty images from the predefined train split are instead moved to the validation split.
+
+*AAU-PD-T* @hudaEffectDiverseDataset2020 is a dataset of images captured from cameras mounted at a height of 9m and directed at a soccer field. Thus, the objects are rather small and a wide variety of environmental conditions is covered by the data, mimicking the characteristics of typical surveillance scenarios. The default test split is preserved. Since no predefined validation split is provided, all empty images from the default training split are discarded entirely.
+
+*OSU-T* @davisTwoStageTemplateApproach2005 serves only as a benchmark for testing the models due to its relatively small size of just 284 images. This also ensures testing with data that is not only completely unseen by the models before but also entirely unrelated to the images they have been trained on.
+
+The *M3FD* @liuTargetawareDualAdversarial2022 dataset is originally intended to be used as a benchmark as well. Since its value for benchmarking lies in the multi-modality, however, it is instead split into train, validation and test images for this project, with a 60%/20%/20% ratio. That way the varying ambient conditions of the thermal imagery in this dataset also contribute to the overall diversity of the training data. The images in the training split are selected such that they contain at least one object.
+
+*KAIST-CVPR15* @hwangMultispectralPedestrianDetection2015 contributes the second-largest volume of thermal pedestrian data captured across different times of day, providing extensive variety in ambient thermal conditions that affect human-background contrast relationships. The urban traffic environment introduces complex thermal scenes with multiple heat sources (vehicles, pavement, buildings) that require sophisticated discrimination capabilities. It contains three classes: person, people and cyclist. Since the cyclist bounding boxes only encapsulate the humans and not the rest of the bicycles, all cyclist labels are converted to person labels. To avoid "confusing" the model with different annotation standard for crowds across datasets, all images containing people objects are dropped entirely. By default, the dataset only has a train and test split. Due to the changes applied to the labels, model performance on the test split cannot be used for comparison to the results that have been reported for other models in the literature. Thus, the test split can be further modified by selecting half of the test images for validation.
+
+
+ @dataset-split-table provides an overview of the resulting splits across the differnt datasets.
 
 #figure(
   caption: [Comprehensive thermal dataset specifications and characteristics],
   table(
-    columns: (19%, 13.5%, 13.5%, 13.5%, 13.5%, 13.5%, 13.5%),
+    columns: (24%, 12.66%, 12.66%, 12.67%, 12.66%, 12.66%, 12.67%),
     inset: 6pt,
     align: (x, y) => if y == 0 {center + horizon} else if x == 0 {left + horizon} else {center + horizon},
     
     table.cell(rowspan: 2, [*Dataset*]),
+    table.vline(stroke: 2pt),
     table.cell(colspan: 3, [*Images per split*]),
+    table.vline(stroke: 2pt),
     table.cell(colspan: 3, [*Objects per split*]),
 
     [*Train*],
@@ -513,7 +526,7 @@ The datasets utilized in this project are specifically selected to form a compre
     [AAU-PD-T], 
     // Images
     [706],
-    [1235],
+    [0],
     [1000],
     // Objects
     [5572],
@@ -553,25 +566,18 @@ The datasets utilized in this project are specifically selected to form a compre
     [1661],
     [2186],
     table.hline(stroke: 2pt),
-    [*Overall:*],
-    [20246], [7665]
+    [*Overall*],
+    [20246], [6430], [7660],
+    [94305], [11934], [23469],
+    [*Relative*],
+    [59,0%], [18,7%], [22,3%],
+    [72,7%], [9,2%], [18,1%],
+    [*Average number of objects per image*],
+    [4,66], [1,86], [3,06]
   ),
 )<dataset-split-table>
 
-
-Since the datasets may contain images without any objects, the training split of the *TODO: CONTINUE HERE - AND REPLACE TABLE DATA WITH CUSTOM SPLITS*
-
-The AAU-PD-T dataset @hudaEffectDiverseDataset2020 contributes controlled pedestrian detection imagery with small subjects far away from the camera. The elevated perspective and sports field environment provide scenarios with minimal thermal background clutter, enabling evaluation of pure human detection capabilities without complex environmental interference and mimicking an angle that is typical of surveillance scenarios. However, not all images in the dataset contain objects, which may lead to errors due to undefined loss values of the loss function.
-
-OSU-T @davisTwoStageTemplateApproach2005 delivers outdoor thermal surveillance scenarios with natural environmental temperature variations and diverse background thermal signatures that challenge model generalization capabilities. The university campus setting provides realistic pedestrian detection scenarios with varying crowd densities and complex thermal backgrounds from buildings, vegetation, and infrastructure.
-
-M3FD @liuTargetawareDualAdversarial2022 offers thermal imagery with varying ambient conditions where human thermal signatures exhibit different polarities relative to background temperatures. The dual-modal nature of this dataset, while primarily used for its thermal component, ensures exposure to challenging scenarios where traditional RGB-based assumptions may not apply to thermal domain characteristics.
-
-KAIST-CVPR15 @hwangMultispectralPedestrianDetection2015 contributes the largest volume of thermal pedestrian data captured across different times of day, providing extensive variety in ambient thermal conditions that affect human-background contrast relationships. The urban traffic environment introduces complex thermal scenes with multiple heat sources (vehicles, pavement, buildings) that require sophisticated discrimination capabilities.
-
-This multi-dataset approach creates a comprehensive compound training dataset that addresses the fundamental challenge of thermal domain adaptation for human detection models originally designed for RGB imagery. The combination ensures robust evaluation across varying thermal polarities (human-hot vs human-cool scenarios), environmental temperature conditions (day/night thermal crossover points), subject distances (near-field sports surveillance vs far-field automotive detection), and thermal contrast scenarios (high-contrast winter conditions vs challenging summer thermal equilibrium).
-
-The unified annotation scheme maps all dataset-specific labels to a consistent class hierarchy: person, car, bicycle, animal, other vehicle, and background. This standardization enables seamless integration while preserving the diversity of thermal signatures and environmental conditions represented across the constituent datasets. The resulting compound dataset encompasses over 130,000 images with more than 250,000 annotated objects, providing sufficient scale and diversity for robust model training while minimizing dataset-specific biases that could compromise generalizability across diverse infrared imaging conditions encountered in real-world thermal surveillance deployments.
+This multi-dataset approach creates a comprehensive compound training dataset that addresses the fundamental challenge of thermal domain adaptation for human detection models originally designed for RGB imagery. The combination ensures robust evaluation across varying thermal polarities (human-hot vs human-cool scenarios), environmental temperature conditions (day/night thermal crossover points), subject distances (far-field sports surveillance vs  near-field automotive detection), and thermal contrast scenarios (high-contrast winter conditions vs challenging summer thermal equilibrium) @hudaEffectDiverseDataset2020, @hwangMultispectralPedestrianDetection2015 @liuTargetawareDualAdversarial2022. Additionally, the ratio between the different splits closely resembles the standard 60%/20%/20% distribution that is often utilized for computer vision applications.
 
 For training purposes, FLIR ADAS v2, AAU-PD-T, KAIST-CVPR15, and M3FD Detection contribute to the training set, while FLIR ADAS v2 and AAU-PD-T provide validation data. OSU-T serves exclusively as an independent test set, ensuring unbiased evaluation on data completely unseen during training. This split strategy maintains rigorous experimental integrity while maximizing the utilization of available annotated thermal imagery for model development.
 
@@ -752,34 +758,6 @@ This thesis has systematically evaluated the application of Single Shot MultiBox
 - Recommendations: Implementation guidelines for practitioners
 
 = Appendix <Appendix>
-== Figures <figures>
-
-
-=== Tables <table-example>
-
-#figure(
-  caption: "Table Example",
-  table(
-    columns: (1fr, 50%, auto),
-    inset: 10pt,
-    align: horizon,
-    table.header(
-      [],
-      [*Area*],
-      [*Parameters*],
-    ),
-
-    text("cylinder.svg"),
-    $ pi h (D^2 - d^2) / 4 $,
-    [
-      $h$: height ,\
-      $D$: outer radius ,\
-      $d$: inner radius
-    ],
-
-    text("tetrahedron.svg"), $ sqrt(2) / 12 a^3 $, [$a$: edge length],
-  ),
-)<table>
 
 == Code Snippets <code-examples>
 
@@ -799,8 +777,3 @@ Insert code snippets like this:
     export default ReactComponent;
     ```],
 )
-
-#pagebreak()
-
-
-For example this @table references the table on the previous page.
