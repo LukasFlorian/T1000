@@ -350,7 +350,7 @@ However, thermal images also present unique challenges for object detection mode
 
 To address the unique characteristics of thermal imagery and improve object detection accuracy, this study implements three primary preprocessing techniques: normalization, polarity inversion, and edge enhancement. These techniques are designed to adapt #acr("RGB")-trained models to thermal domain characteristics while preserving essential spatial and thermal information.
 
-*Normalization* serves as the fundamental preprocessing step, ensuring consistent input scaling across all thermal images and enabling proper transfer of learned features from the #acr("RGB") domain for the pretrained model backbones. Following standard practice, input images are normalized using the ImageNet dataset statistics with channel-wise means of [0.485, 0.456, 0.406] and standard deviations of [0.229, 0.224, 0.225] @dengImageNetLargeScaleHierarchical.
+*Normalization* serves as the fundamental preprocessing step, ensuring consistent input scaling across all thermal images and enabling proper transfer of learned features from the #acr("RGB") domain for the pretrained model backbones. Following standard practice, input images are normalized using the ImageNet dataset statistics with channel-wise means of [0.485, 0.456, 0.406] and standard deviations of [0.229, 0.224, 0.225] @dengImageNetLargescaleHierarchical2009.
 
 The normalization process transforms pixel intensities according to @norm-eqn, where $I_"norm"$ represents the normalized image, $I_"raw"$ is the input thermal image, $mu$ is the mean, and $sigma$ is the standard deviation for each channel.
 
@@ -382,7 +382,7 @@ $
   )
 $<gaussian-kernel>
 
-Subsequently, Sobel operators are applied to detect horizontal and vertical edges. The Sobel kernels $S_x$ and $S_y$ for horizontal and vertical edge detection are defined as @burnhamComparisonRobertsSobel:
+Subsequently, Sobel operators are applied to detect horizontal and vertical edges. The Sobel kernels $S_x$ and $S_y$ for horizontal and vertical edge detection are defined as @burnhamComparisonRobertsSobel1997:
 
 $
   S_x = mat(
@@ -400,7 +400,7 @@ The final edge magnitude is computed by combining both directional gradients acc
 
 $
   E = sqrt((I * S_x)^2 + (I * S_y)^2)
-$<edge-magnitude>@burnhamComparisonRobertsSobel
+$<edge-magnitude>@burnhamComparisonRobertsSobel1997
 
 Where $*$ denotes the convolution operation. This edge-enhanced representation provides additional geometric information that complements the thermal intensity data, potentially improving the model's ability to localize and classify human subjects in infrared images.
 
@@ -698,7 +698,14 @@ Lastly, to improve convergence behavior and ensure proper feature scaling across
 
 == Training Procedure
 
-*TODO: MPT explanation*
+The training methodology employs a systematic approach to optimize SSD models for thermal human detection across diverse environmental conditions. All models are trained using the combined dataset described in @dataset, utilizing #acr("SGD") optimization with carefully tuned hyperparameters to ensure convergence stability and optimal performance. The training process incorporates several advanced techniques to address computational constraints while maintaining model accuracy, including mixed-precision training for memory efficiency and adaptive learning rate scheduling for improved convergence behavior.
+
+=== #acrl("MPT")
+Due to computational constraints, the training procedure makes use of #acr("MPT"). This optimization technique leverages the reduced memory requirements and increased computational throughput of #acrl("FP16") operations while maintaining the numerical stability of #acrl("FP32") precision for critical operations @micikeviciusMixedPrecisionTraining2018.
+
+During training, the forward pass and gradient computation perform most operations using #acr("FP16") precision to maximize memory efficiency and computational speed. However, the gradient updates are applied to the #acr("FP32") model weights to prevent the accumulation of rounding errors that could destabilize training. Before each forward pass, the #acr("FP32") master weights are cast to #acr("FP16") for computation.
+
+To address the #acr("VGP") problem exacerbated by the limited dynamic range of #acr("FP16") (approximately $6.1 dot 10^(-5)$ to $6.55 dot 10^4$), gradient scaling is employed. This technique multiplies the loss by a scaling factor before backpropagation, effectively shifting small gradient values into the representable range of #acr("FP16"). After gradient computation, the gradients are unscaled before applying updates to the #acr("FP32") master weights. This prevents gradient underflow while maintaining training stability and convergence properties almost entirely equivalent to full-precision training @micikeviciusMixedPrecisionTraining2018.
 
 == Experimental Design <exp-design>
 Outlines the systematic approach to comparing model variants and the evaluation framework.

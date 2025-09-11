@@ -65,9 +65,10 @@
   file = {/Users/lukas/Zotero/storage/Q3CC46VK/Bridle - 1989 - Training Stochastic Model Recognition Algorithms as Networks can Lead to Maximum Mutual Information.pdf}
 }
 
-@article{burnhamComparisonRobertsSobel,
+@article{burnhamComparisonRobertsSobel1997,
   title = {Comparison of the {{Roberts}}, {{Sobel}}, {{Robinson}}, {{Canny}}, and {{Hough Image Detection Algorithms}}},
   author = {Burnham, John and Hardy, Jonathan and Meadors, Kyle},
+  year = {1997},
   abstract = {This paper presents a comparison and evaluation of the Roberts, Sobel, Robinson, Canny, and Hough image detection algorithms based on their ability to detect red squares on a black and white background. Inspired by the Institute of Electrical and Electronics Engineers (IEEE) Southeastcon student hardware competition, the algorithms are tested on an image database comprised of gray scale images taken from a test platform containing red squares on a black and white background. The success of each algorithm is based on its accuracy in detecting the red squares within the images from the database. The results of the algorithms are then compared statistically to determine which one is the best suited for this application.},
   langid = {english},
   file = {/Users/lukas/Zotero/storage/BWT2D4X2/Burnham et al. - Comparison of the Roberts, Sobel, Robinson, Canny, and Hough Image Detection Algorithms.pdf}
@@ -141,12 +142,20 @@
   file = {/Users/lukas/Zotero/storage/AEUHIRTF/4129504.html}
 }
 
-@article{dengImageNetLargeScaleHierarchical,
-  title = {{{ImageNet}}: {{A Large-Scale Hierarchical Image Database}}},
+@inproceedings{dengImageNetLargescaleHierarchical2009,
+  title = {{{ImageNet}}: {{A}} Large-Scale Hierarchical Image Database},
+  shorttitle = {{{ImageNet}}},
+  booktitle = {2009 {{IEEE Conference}} on {{Computer Vision}} and {{Pattern Recognition}}},
   author = {Deng, Jia and Dong, Wei and Socher, Richard and Li, Li-Jia and Li, Kai and {Fei-Fei}, Li},
-  abstract = {The explosion of image data on the Internet has the potential to foster more sophisticated and robust models and algorithms to index, retrieve, organize and interact with images and multimedia data. But exactly how such data can be harnessed and organized remains a critical problem. We introduce here a new database called ``ImageNet'', a largescale ontology of images built upon the backbone of the WordNet structure. ImageNet aims to populate the majority of the 80,000 synsets of WordNet with an average of 5001000 clean and full resolution images. This will result in tens of millions of annotated images organized by the semantic hierarchy of WordNet. This paper offers a detailed analysis of ImageNet in its current state: 12 subtrees with 5247 synsets and 3.2 million images in total. We show that ImageNet is much larger in scale and diversity and much more accurate than the current image datasets. Constructing such a large-scale database is a challenging task. We describe the data collection scheme with Amazon Mechanical Turk. Lastly, we illustrate the usefulness of ImageNet through three simple applications in object recognition, image classification and automatic object clustering. We hope that the scale, accuracy, diversity and hierarchical structure of ImageNet can offer unparalleled opportunities to researchers in the computer vision community and beyond.},
-  langid = {english},
-  file = {/Users/lukas/Zotero/storage/KNX2YVH7/Deng et al. - ImageNet A Large-Scale Hierarchical Image Database.pdf}
+  year = {2009},
+  month = jun,
+  pages = {248--255},
+  issn = {1063-6919},
+  doi = {10.1109/CVPR.2009.5206848},
+  urldate = {2025-09-11},
+  abstract = {The explosion of image data on the Internet has the potential to foster more sophisticated and robust models and algorithms to index, retrieve, organize and interact with images and multimedia data. But exactly how such data can be harnessed and organized remains a critical problem. We introduce here a new database called ``ImageNet'', a large-scale ontology of images built upon the backbone of the WordNet structure. ImageNet aims to populate the majority of the 80,000 synsets of WordNet with an average of 500--1000 clean and full resolution images. This will result in tens of millions of annotated images organized by the semantic hierarchy of WordNet. This paper offers a detailed analysis of ImageNet in its current state: 12 subtrees with 5247 synsets and 3.2 million images in total. We show that ImageNet is much larger in scale and diversity and much more accurate than the current image datasets. Constructing such a large-scale database is a challenging task. We describe the data collection scheme with Amazon Mechanical Turk. Lastly, we illustrate the usefulness of ImageNet through three simple applications in object recognition, image classification and automatic object clustering. We hope that the scale, accuracy, diversity and hierarchical structure of ImageNet can offer unparalleled opportunities to researchers in the computer vision community and beyond.},
+  keywords = {Explosions,Image databases,Image retrieval,Information retrieval,Internet,Large-scale systems,Multimedia databases,Ontologies,Robustness,Spine},
+  file = {/Users/lukas/Zotero/storage/KNX2YVH7/Deng et al. - ImageNet A Large-Scale Hierarchical Image Database.pdf;/Users/lukas/Zotero/storage/DF7TN2S9/5206848.html}
 }
 
 @misc{dengInadequatelyPretrainedModels2023,
@@ -459,6 +468,24 @@
   keywords = {Computer Science - Computer Vision and Pattern Recognition},
   note = {Comment: Accepted by IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2022. (Oral)},
   file = {/Users/lukas/Zotero/storage/AX24K4Y8/Liu et al. - 2022 - Target-aware Dual Adversarial Learning and a Multi-scenario Multi-Modality Benchmark to Fuse Infrare.pdf;/Users/lukas/Zotero/storage/EWKP37PP/2203.html}
+}
+
+@misc{micikeviciusMixedPrecisionTraining2018,
+  title = {Mixed {{Precision Training}}},
+  author = {Micikevicius, Paulius and Narang, Sharan and Alben, Jonah and Diamos, Gregory and Elsen, Erich and Garcia, David and Ginsburg, Boris and Houston, Michael and Kuchaiev, Oleksii and Venkatesh, Ganesh and Wu, Hao},
+  year = {2018},
+  month = feb,
+  number = {arXiv:1710.03740},
+  eprint = {1710.03740},
+  primaryclass = {cs},
+  publisher = {arXiv},
+  doi = {10.48550/arXiv.1710.03740},
+  urldate = {2025-09-11},
+  abstract = {Deep neural networks have enabled progress in a wide variety of applications. Growing the size of the neural network typically results in improved accuracy. As model sizes grow, the memory and compute requirements for training these models also increases. We introduce a technique to train deep neural networks using half precision floating point numbers. In our technique, weights, activations and gradients are stored in IEEE half-precision format. Half-precision floating numbers have limited numerical range compared to single-precision numbers. We propose two techniques to handle this loss of information. Firstly, we recommend maintaining a single-precision copy of the weights that accumulates the gradients after each optimizer step. This single-precision copy is rounded to half-precision format during training. Secondly, we propose scaling the loss appropriately to handle the loss of information with half-precision gradients. We demonstrate that this approach works for a wide variety of models including convolution neural networks, recurrent neural networks and generative adversarial networks. This technique works for large scale models with more than 100 million parameters trained on large datasets. Using this approach, we can reduce the memory consumption of deep learning models by nearly 2x. In future processors, we can also expect a significant computation speedup using half-precision hardware units.},
+  archiveprefix = {arXiv},
+  keywords = {Computer Science - Artificial Intelligence,Computer Science - Machine Learning,Statistics - Machine Learning},
+  note = {Comment: Published as a conference paper at ICLR 2018},
+  file = {/Users/lukas/Zotero/storage/K2F9P5LL/Micikevicius et al. - 2018 - Mixed Precision Training.pdf;/Users/lukas/Zotero/storage/EC2EFCVU/1710.html}
 }
 
 @misc{munirSSTNSelfSupervisedDomain2021,
