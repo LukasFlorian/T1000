@@ -54,4 +54,6 @@
   BGD: "Batch Gradient Descent",
   TL: "Transfer Learning",
   MBGD: "Mini-Batch Gradient Descent",
+  MPT: "Mixed Precision Training",
+  JIT: "Just-In-Time",
 )

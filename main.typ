@@ -81,7 +81,7 @@ The practical significance of this research extends beyond academic interest, ad
 
 This thesis makes several key contributions to the field of thermal image processing and computer vision:
 
-*TODO: Reconsider Objectives vs. Contributions, place latter in the conclusion*
+*TODO: Reconsider Objectives vs. Contributions, place later in the conclusion*
 
 + *Preprocessing Technique Analysis*: Quantitative evaluation of thermal-specific image enhancement methods, including polarity inversion and edge enhancement, and their impact on detection accuracy.
 
@@ -171,6 +171,8 @@ In this equation, $f$ and $g$ are the functions applying the linear transformati
 
 In the context of deep learning, this means that deeper models are particularly likely to suffer from this problem, as more layers amplify the core issue. One approach to mitigate this problem is to introduce the so-called residual layers allowing for an identity mapping of the input to the output of a layer, which is a key component of the #acr("ResNet") architecture.
 
+
+
 === Residual Layers to Mitigate the #acr("VGP") <resnet-arch>
 
 Residual layers are a key component of the #acr("ResNet") as well as other modern architectures, and are designed to mitigate the #acr("VGP") problem. The idea behind residual layers is to introduce a shortcut connection that allows the input to the layer to be added to the output of the layer. This shortcut connection allows the gradient to "flow directly through the layer", which helps to prevent the gradient from vanishing as it is backpropagated through the network. @residual-fn shows the residual layer, where $F$ is the residual function, $x$ is the input to the layer, and $accent(y, hat)$ is the output of the layer. The residual function $F$ is typically a stack of convolutional layers, #acr("BN") layers, and #acr("ReLU") activation functions. @heDeepResidualLearning2015
@@ -200,7 +202,33 @@ It becomes apparent that introducing residual layers and identity shortcuts help
 
 When the input and output dimensions of a residual layer do not match, a linear projection is used to match the dimensions of the input and output before adding the two together. This linear projection is typically implemented using a 1x1 convolutional layer @heDeepResidualLearning2015. Even though this practice introduces additional parameters that need to be learned and makes the identity shortcut actually not an identity function anymore, it is still beneficial to the training process, as the residual function can be used to significantly increase the network's depth while preserving the gradient flow.
 
-*TODO ONCE TEXT IS DONE: Residual Layer visualization*
+== Computational Overhead Reduction Techniques <computational-overhead>
+
+Training deep neural networks for object detection tasks presents significant computational challenges, particularly when evaluating multiple model variants across diverse datasets. Modern deep learning frameworks and hardware architectures provide several optimization techniques that can substantially reduce training time and memory requirements while maintaining model performance. This section examines the key computational optimization strategies employed in this work, focusing on their theoretical foundations and practical applications to thermal image processing workflows.
+
+=== #acrf("MPT") <mpt-theory>
+
+#acrf("MPT") is a computational optimization technique that addresses the memory and computational constraints encountered during deep neural network training. This approach leverages the reduced precision arithmetic capabilities of modern hardware accelerators while maintaining the numerical stability required for effective model convergence @micikeviciusMixedPrecisionTraining2018.
+
+The fundamental principle behind #acr("MPT") involves utilizing lower-precision floating-point representations (#acr("FP16")) for the majority of training operations while preserving higher-precision (#acr("FP32")) calculations for operations that require numerical stability. This selective precision approach enables significant reductions in memory usage (typically 50% or more) and computational time while maintaining training effectiveness equivalent to full-precision training. @micikeviciusMixedPrecisionTraining2018
+
+During mixed-precision training, the forward pass and gradient computation operations are performed using #acr("FP16") precision to maximize memory efficiency and computational throughput. However, the model weights are maintained in #acr("FP32") precision, and gradient updates are applied to these full-precision parameters. This ensures that small gradient values are not lost due to the limited dynamic range of #acr("FP16") representation (approximately $6.1 times 10^(-5)$ to $6.55 times 10^4$).
+
+To address potential gradient underflow issues that can arise from the limited dynamic range of #acr("FP16"), gradient scaling techniques are employed. The loss function is multiplied by a scaling factor before backpropagation, effectively shifting small gradient values into the representable range of #acr("FP16"). After gradient computation, the gradients are unscaled before applying updates to the #acr("FP32") model weights @micikeviciusMixedPrecisionTraining2018.
+
+The implementation of #acr("MPT") is particularly beneficial for large-scale training scenarios where memory constraints and computational efficiency are critical factors.
+
+=== #acrf("JIT") Compilation and Graph Optimization <jit-theory>
+
+#acrf("JIT") compilation represents a runtime optimization strategy that transforms computational graphs and Python code into optimized machine code during execution, rather than relying solely on interpreted execution. This approach addresses the inherent performance overhead of dynamic programming languages like Python, which traditionally suffer from interpretation bottlenecks during intensive computational workloads. @anselPyTorch2Faster2024 @PyTorch2x.
+
+The fundamental principle of #acr("JIT") compilation involves analyzing the computational patterns during initial execution runs and generating optimized compiled code for subsequent iterations. This process eliminates Python overhead, optimizes memory access patterns, and enables hardware-specific optimizations that can significantly accelerate training throughput. Modern deep learning frameworks implement #acr("JIT") compilation through graph compilation strategies that analyze the computational graph structure and apply fusion operations, kernel optimization, and memory layout improvements. @anselPyTorch2Faster2024
+
+In PyTorch, #acr("JIT") compilation is implemented through TorchScript and the `torch.compile` function, which can provide substantial speedups for models with repetitive computational patterns. The compilation process involves tracing or scripting the model's forward pass to create an optimized representation of the forwards graph, which can optionally be used to also create a backwards graph for gradient computation. @anselPyTorch2Faster2024
+
+Specifically using PyTorch's `aot_eager` backend for compilation means additionally creating a backwards graph for gradient computation ahead-of-time as soon as the forwards graph has been generated using the AOTAutograd graph analysis and generation engine. @anselPyTorch2Faster2024
+
+The benefits of #acr("JIT") compilation become particularly pronounced in iterative training scenarios where the same computational patterns are repeated thousands of times across training epochs. Object detection models like #acr("SSD") benefit significantly from this optimization due to their complex multi-scale feature extraction and anchor box processing operations, which involve repetitive convolutions and tensor manipulations that can be efficiently optimized through compilation. Geometric mean speedups of $2.27 times$ during inference and $1.41 times$ for training have been reported across 180+ models of in the paper introducing JIT compilation and AOTAutograd for PyTorch @anselPyTorch2Faster2024.
 
 == Single Shot MultiBox Detector (SSD) Architecture <ssd-arch>
 The SSD architecture is a single-stage detector that uses a base network to extract features from the input image and then applies additional convolutional layers as well as #acr("FC") layers to predict bounding boxes and class scores for each feature map. The following sections provide a more detailed explanation of the SSD architecture and its components.
@@ -340,7 +368,7 @@ Thermal imaging presents unique challenges and opportunities for computer vision
 
 === Characteristics of Thermal Images <thermal-characteristics>
 
-Thermal images fundamentally differ from visible-light imagery in several key aspects that directly impact neural network performance. Unlike #acr("RGB") images that capture reflected light, thermal cameras detect electromagnetic radiation in the infrared spectrum (typically 8-14 μm), creating images based on the heat signatures emitted by objects @farooqObjectDetectionThermal2021.
+Thermal images fundamentally differ from visible-light imagery in several key aspects that directly impact neural network performance. Unlike #acr("RGB") images that capture reflected light, thermal cameras detect electromagnetic radiation in the infrared spectrum, creating images based on the heat signatures emitted by objects @farooqObjectDetectionThermal2021.
 
 The most distinctive characteristic of thermal imagery is its independence from ambient lighting conditions. Since thermal cameras detect heat radiation rather than reflected light, they provide consistent imaging capabilities in complete darkness, fog, smoke, and other challenging environmental conditions where traditional #acr("RGB") systems fail @akshathaHumanDetectionAerial2022. This makes thermal imaging particularly valuable for surveillance applications.
 
@@ -492,7 +520,7 @@ The *M3FD* @liuTargetawareDualAdversarial2022 dataset is originally intended to 
  @dataset-split-table provides an overview of the resulting splits across the differnt datasets.
 
 #figure(
-  caption: [Comprehensive thermal dataset specifications and characteristics],
+  caption: [Dataset split overview. Val stands for Validation],
   table(
     columns: (24%, 12.66%, 12.66%, 12.67%, 12.66%, 12.66%, 12.67%),
     inset: 6pt,
@@ -576,7 +604,9 @@ The *M3FD* @liuTargetawareDualAdversarial2022 dataset is originally intended to 
   ),
 )<dataset-split-table>
 
-This multi-dataset approach creates a comprehensive compound training dataset that addresses the fundamental challenge of thermal domain adaptation for human detection models originally designed for RGB imagery. The combination ensures robust evaluation across varying thermal polarities (human-hot vs human-cool scenarios), environmental temperature conditions (day/night thermal crossover points), subject distances (far-field sports surveillance vs  near-field automotive detection), and thermal contrast scenarios (high-contrast winter conditions vs challenging summer thermal equilibrium) @hudaEffectDiverseDataset2020, @hwangMultispectralPedestrianDetection2015 @liuTargetawareDualAdversarial2022. Additionally, the ratio between the different splits closely resembles the standard 60%/20%/20% distribution that is often utilized for computer vision applications.
+This multi-dataset approach creates a comprehensive compound training dataset that addresses the fundamental challenge of thermal domain adaptation for human detection models originally designed for RGB imagery. The combination ensures robust evaluation across varying thermal polarities (human-hot and human-cool scenarios), environmental temperature conditions (day/night thermal crossover points), subject distances (far-field sports surveillance and  near-field automotive detection), and thermal contrast scenarios (high-contrast winter conditions and challenging summer thermal equilibrium) @hudaEffectDiverseDataset2020, @hwangMultispectralPedestrianDetection2015 @liuTargetawareDualAdversarial2022. Additionally, the ratio between the different splits closely resembles the standard 60%/20%/20% distribution that is often utilized for computer vision applications.
+
+*TODO: split source*
 
 For training purposes, FLIR ADAS v2, AAU-PD-T, KAIST-CVPR15, and M3FD Detection contribute to the training set, while FLIR ADAS v2 and AAU-PD-T provide validation data. OSU-T serves exclusively as an independent test set, ensuring unbiased evaluation on data completely unseen during training. This split strategy maintains rigorous experimental integrity while maximizing the utilization of available annotated thermal imagery for model development.
 
@@ -698,17 +728,243 @@ Lastly, to improve convergence behavior and ensure proper feature scaling across
 
 == Training Procedure
 
-The training methodology employs a systematic approach to optimize SSD models for thermal human detection across diverse environmental conditions. All models are trained using the combined dataset described in @dataset, utilizing #acr("SGD") optimization with carefully tuned hyperparameters to ensure convergence stability and optimal performance. The training process incorporates several advanced techniques to address computational constraints while maintaining model accuracy, including mixed-precision training for memory efficiency and adaptive learning rate scheduling for improved convergence behavior.
+The training methodology employs a systematic approach to optimize SSD models for thermal human detection across diverse environmental conditions. All models are trained using the combined dataset described in @dataset, utilizing #acr("SGD") optimization with carefully tuned hyperparameters to ensure convergence stability and optimal performance. The training process incorporates several advanced techniques to address computational constraints while maintaining model accuracy, including mixed-precision training for memory efficiency, model compilation for performance optimization, and adaptive learning rate scheduling for improved convergence behavior.
+
+=== Core Training Configuration
+
+The training procedure uses a consistent set of hyperparameters across all 16 model variants to ensure fair comparison between architectures and preprocessing techniques. The core training configuration is designed to balance convergence stability with computational efficiency:
+
+#figure(
+  caption: "Core Training Configuration",
+  sourcecode[```py
+    batch_size = 64
+    learning_rate = 1e-4  
+    epochs = 14
+    momentum = 0.9
+    weight_decay = 5e-4
+    optimizer = SGD  # with differential bias learning rates
+    ```],
+)
+
+The batch size of 64 provides adequate gradient estimation while remaining within memory constraints of the available hardware. The relatively conservative learning rate of $10^(-4)$ ensures stable convergence across different model architectures and initialization strategies, preventing divergence during the critical early training phases.
+
+=== Learning Rate Scheduling and Optimization
+
+The optimization strategy employs #acr("SGD") with momentum, incorporating differential learning rates for bias parameters to improve convergence behavior. Bias parameters receive twice the base learning rate ($2 times 10^(-4)$), following established practices that recognize the different optimization dynamics of bias terms compared to weight matrices.
+
+Learning rate scheduling follows a step decay strategy with reductions at epochs 8 and 12, where the learning rate is multiplied by 0.1. This schedule allows the model to make rapid initial progress during early training while enabling fine-tuning in later epochs. The specific scheduling points were chosen based on empirical observation of loss plateaus during preliminary experiments.
+
+Weight decay regularization ($5 times 10^(-4)$) prevents overfitting by penalizing large parameter values, particularly important given the relatively limited thermal training data compared to standard #acr("RGB") datasets. The momentum coefficient of 0.9 provides acceleration through consistent gradient directions while damping oscillations in parameter updates.
 
 === #acrl("MPT")
-Due to computational constraints, the training procedure makes use of #acr("MPT"). This optimization technique leverages the reduced memory requirements and increased computational throughput of #acrl("FP16") operations while maintaining the numerical stability of #acrl("FP32") precision for critical operations @micikeviciusMixedPrecisionTraining2018.
 
-During training, the forward pass and gradient computation perform most operations using #acr("FP16") precision to maximize memory efficiency and computational speed. However, the gradient updates are applied to the #acr("FP32") model weights to prevent the accumulation of rounding errors that could destabilize training. Before each forward pass, the #acr("FP32") master weights are cast to #acr("FP16") for computation.
+Due to computational constraints, the training procedure employs several optimization techniques described in @computational-overhead.
 
-To address the #acr("VGP") problem exacerbated by the limited dynamic range of #acr("FP16") (approximately $6.1 dot 10^(-5)$ to $6.55 dot 10^4$), gradient scaling is employed. This technique multiplies the loss by a scaling factor before backpropagation, effectively shifting small gradient values into the representable range of #acr("FP16"). After gradient computation, the gradients are unscaled before applying updates to the #acr("FP32") master weights. This prevents gradient underflow while maintaining training stability and convergence properties almost entirely equivalent to full-precision training @micikeviciusMixedPrecisionTraining2018.
+=== #acrl("MPT")
+
+The training implementation uses #acr("MPT") as described in @mpt-theory. The mixed-precision implementation uses PyTorch's autocast context manager with CPU backend configuration:
+
+#figure(
+  caption: "Mixed-Precision Training Configuration",
+  sourcecode[```py
+    torch.autocast(device_type="cpu", dtype=torch.float16)
+    ```],
+)
+
+This approach achieves approximately 50% reduction in memory usage while maintaining numerical stability equivalent to full-precision training, enabling the comprehensive evaluation of all 16 model variants within available computational resources.
+
+=== Model Compilation and Performance Optimization
+
+To accelerate training throughput, the implementation leverages #acr("JIT") compilation as described in @jit-theory. The compilation uses PyTorch's ahead-of-time eager mode optimization:
+
+#figure(
+  caption: "Model Compilation Setup",
+  sourcecode[```py
+    torch.compile(model, backend="aot_eager")
+    ```],
+)
+
+Model compilation provides an expected 1.5-2× speedup in training time by optimizing computational graphs and reducing Python overhead during forward and backward passes. The compilation strategy is particularly beneficial for the iterative nature of object detection training, where the same computational patterns are repeated across thousands of training iterations.
+
+=== Memory-Efficient Training Pipeline
+
+Given the computational demands of training 16 different model variants, the training pipeline employs several memory management strategies to enable comprehensive experimentation within hardware constraints. Models are trained sequentially rather than in parallel, with explicit memory cleanup between training runs:
+
+#figure(
+  caption: "Memory Management Strategy",
+  sourcecode[```py
+    torch.cuda.empty_cache()  # CUDA GPU memory
+    torch.mps.empty_cache()   # Apple Silicon unified memory
+    gc.collect()              # Python garbage collection
+    ```],
+)
+
+This sequential approach prevents memory fragmentation and allows each model to utilize the full available memory during training, enabling larger effective batch sizes and more stable gradient estimation. The explicit cache management ensures that memory allocated by previous model training runs is properly released before beginning subsequent experiments.
+
+=== Data Loading and Augmentation Pipeline
+
+The training pipeline employs optimized data loading with 4 parallel worker processes to prevent I/O bottlenecks during training. Persistent workers are enabled to reduce the overhead of worker initialization across epochs, particularly beneficial given the multiple datasets being processed simultaneously.
+
+Data augmentation is integrated directly into the `ObjectDetectionDataset` class, applying photometric distortions (brightness and contrast adjustments) and geometric transformations (random expansion, cropping, and horizontal flipping) to increase training data diversity. All images are resized to the standard SSD300 input resolution of 300×300 pixels with ImageNet normalization statistics:
+
+#figure(
+  caption: "ImageNet Normalization Statistics",
+  sourcecode[```py
+    mean = [0.485, 0.456, 0.406]
+    std = [0.229, 0.224, 0.225]
+    ```],
+)
+
+This normalization approach maintains compatibility with ImageNet-pretrained backbones while adapting to the unique characteristics of thermal imagery through the preprocessing techniques described in @thermal-preprocessing.
+
+=== Gradient Management and Numerical Stability
+
+Optional gradient clipping is implemented to handle potential gradient explosion during training, particularly relevant for the deeper ResNet152 architecture. When enabled, gradients are clipped element-wise to prevent destabilization:
+
+#figure(
+  caption: "Gradient Clipping Implementation",
+  sourcecode[```py
+    param.grad.data.clamp_(-grad_clip, grad_clip)
+    ```],
+)
+
+The optimizer state is preserved across checkpoint loading operations, ensuring that momentum buffers and other optimization state variables remain consistent when resuming training from saved checkpoints. This preservation is crucial for maintaining convergence properties when training is interrupted or distributed across multiple sessions.
+
+=== Training Statistics and Monitoring
+
+Training progress is monitored through comprehensive loss tracking with both per-epoch and per-iteration granularity. Loss statistics are saved in CSV format within the `stats/loss/` directory, with separate files for each model configuration. This detailed tracking enables post-hoc analysis of convergence behavior and identification of potential training instabilities.
+
+Validation evaluation is performed regularly during training to monitor generalization performance and detect overfitting. The evaluation frequency is balanced to provide meaningful feedback without significantly impacting training throughput, particularly important given the computational overhead of the MultiBox loss calculation across 8732 anchor boxes per image.
+
+Model checkpoints are saved at regular intervals and preserve complete training state including model parameters, optimizer state, and training metadata. This comprehensive state preservation enables reproducible resumable training and facilitates ablation studies across different hyperparameter configurations.
 
 == Experimental Design <exp-design>
-Outlines the systematic approach to comparing model variants and the evaluation framework.
+
+The experimental methodology employs a comprehensive factorial design to systematically evaluate the impact of architectural choices and preprocessing techniques on thermal human detection performance. This approach enables rigorous comparison across multiple variables while controlling for confounding factors that could bias results. The experimental framework is designed to provide statistically meaningful insights into optimal configurations for real-world thermal surveillance applications.
+
+=== Model Configuration Matrix
+
+The experimental design evaluates 16 distinct model configurations through a systematic $2 times 2 times 4$ factorial arrangement examining three primary factors:
+
+*Backbone Architecture*: Two architectures representing different design philosophies
+- VGG16: Traditional sequential CNN with 138M parameters, emphasizing simplicity and proven effectiveness
+- ResNet152: Deep residual network with skip connections, addressing vanishing gradient problems through 152 layers
+
+*Initialization Strategy*: Two approaches to parameter initialization  
+- Pretrained: Models initialized with ImageNet-pretrained weights, leveraging #acr("TL") from RGB domain
+- Scratch: Random initialization following Xavier uniform distribution, training exclusively on thermal data
+
+*Preprocessing Configuration*: Four thermal-specific enhancement strategies
+- None: Baseline with standard normalization only
+- Inversion: Thermal polarity correction addressing hot-white vs. cold-white scenarios  
+- Edge Enhancement: Two-stage enhancement combining Gaussian blur and Sobel edge detection
+- Combined: Integration of both inversion and edge enhancement techniques
+
+This factorial design results in comprehensive model naming convention: `SSD-{VGG|ResNet}-{pretrained|scratch}-{preprocessing}`, enabling systematic analysis of interaction effects between architectural choices and preprocessing strategies.
+
+=== Evaluation Methodology Framework
+
+The evaluation framework employs multiple complementary metrics to provide comprehensive assessment of model performance across different operational scenarios. The multi-metric approach recognizes that optimal model selection depends on specific deployment requirements and operational constraints.
+
+*Primary Detection Metrics*:
+- *mAP\@0.5*: Standard PASCAL VOC metric using 0.5 IoU threshold for positive detection classification
+- *MS COCO Style mAP*: 101-point interpolated average precision across IoU thresholds from 0.5 to 0.95 in 0.05 increments
+- *Precision-Recall Curves*: Performance characterization across confidence threshold ranges from 0.01 to 1.0
+
+*Computational Efficiency Metrics*:
+- *Inference Speed*: Forward pass timing on target hardware configurations
+- *Memory Usage*: Peak GPU/CPU memory consumption during inference
+- *Model Size*: Parameter count and storage requirements for edge deployment
+
+The evaluation parameters are configured to reflect real-world deployment scenarios:
+
+#figure(
+  caption: "Evaluation Parameters Configuration",
+  sourcecode[```py
+    min_score = 0.01           # Minimum confidence for detection consideration
+    max_overlap = 0.45         # NMS IoU threshold for duplicate removal
+    top_k = 200                # Maximum detections per image
+    ```],
+)
+
+These thresholds balance detection sensitivity with false positive suppression, particularly important for surveillance applications where excessive false alarms reduce system utility.
+
+=== Statistical Analysis Framework
+
+To ensure robust conclusions, the experimental design incorporates several statistical rigor measures addressing the inherent variability in neural network training and evaluation.
+
+*Reproducibility Controls*:
+- Fixed random seeds for dataset splitting ensuring consistent train/validation/test divisions
+- Deterministic training procedures where computationally feasible
+- Comprehensive checkpoint preservation enabling exact training replication
+
+*Performance Validation*:
+- Cross-dataset evaluation using multiple thermal datasets to assess generalization
+- Independent test set (OSU-T) completely unseen during training for unbiased evaluation
+- Statistical significance testing for performance differences between model configurations
+
+*Ablation Study Design*:
+The factorial structure enables systematic ablation studies examining:
+- Architecture effects: VGG16 vs. ResNet152 performance isolation
+- Initialization impact: Transfer learning effectiveness across thermal domains  
+- Preprocessing contribution: Individual and combined enhancement technique effects
+- Interaction analysis: Synergistic effects between architectural and preprocessing choices
+
+=== Dataset Stratification and Cross-Validation
+
+The experimental design addresses dataset heterogeneity through strategic splitting that maintains representative sampling across diverse thermal imaging scenarios. The multi-dataset approach ensures robust evaluation across varying environmental conditions, camera configurations, and thermal contrast scenarios.
+
+*Training Set Composition*:
+- FLIR ADAS v2: 8,205 images (40.5% of training data) providing automotive-focused scenarios
+- AAU-PD-T: 706 images (3.5%) contributing elevated surveillance perspectives  
+- M3FD Detection: 2,520 images (12.4%) adding urban driving complexity
+- KAIST-CVPR15: 8,815 images (43.5%) representing diverse pedestrian scenarios
+
+This distribution ensures adequate representation of major thermal imaging scenarios while preventing any single dataset from dominating model behavior. The relatively balanced contribution from FLIR ADAS v2 and KAIST-CVPR15 provides stability in training while smaller datasets contribute specialized scenarios.
+
+*Validation Strategy*:
+- Primary validation: FLIR ADAS v2 and KAIST-CVPR15 subsets providing diverse feedback during training
+- Cross-validation: Models evaluated across all available datasets to assess generalization
+- Independent testing: OSU-T dataset serving as completely unseen evaluation set
+
+=== Performance Benchmarking Protocol
+
+The benchmarking protocol establishes standardized evaluation procedures ensuring fair comparison across all model configurations and enabling reproducible results for future research.
+
+*Evaluation Pipeline*:
+1. *Model Loading*: Checkpoint restoration with complete state preservation
+2. *Data Preprocessing*: Application of model-specific preprocessing pipeline
+3. *Inference Execution*: Batched prediction generation with timing measurement
+4. *Post-processing*: NMS application with standardized parameters
+5. *Metric Calculation*: Comprehensive evaluation using vectorized operations for efficiency
+
+*Hardware Standardization*:
+All experiments are conducted on consistent hardware configurations to eliminate performance variations due to computational differences. Device selection follows automatic GPU/MPS/CPU detection with consistent memory allocation and optimization settings.
+
+*Timing Methodology*:
+Inference speed measurements exclude data loading and preprocessing overhead, focusing on core model computation time. Multiple measurement rounds with warm-up iterations ensure stable timing estimates unaffected by initialization overhead.
+
+=== Experimental Controls and Bias Mitigation
+
+The experimental design incorporates several controls to minimize potential sources of bias and ensure valid conclusions about model performance differences.
+
+*Training Controls*:
+- Identical hyperparameters across all model configurations preventing confounding from optimization differences
+- Sequential model training with memory cleanup preventing interference between experiments  
+- Consistent data augmentation and normalization ensuring fair preprocessing comparison
+
+*Evaluation Controls*:
+- Standardized inference procedures eliminating implementation-dependent performance variations
+- Consistent metric calculation using identical evaluation code across all models
+- Reproducible random sampling for statistical analysis and significance testing
+
+*Environmental Controls*:
+- Controlled software environment with fixed library versions
+- Consistent hardware utilization through sequential rather than parallel training
+- Systematic checkpoint and logging procedures enabling post-hoc verification
+
+This comprehensive experimental design provides the methodological foundation for drawing reliable conclusions about optimal thermal human detection configurations while maintaining the scientific rigor necessary for industrial application and academic contribution.
+
 
 = Results and Analysis <results>
 
