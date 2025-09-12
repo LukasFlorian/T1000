@@ -113,7 +113,7 @@ Simple approaches to object detection entail applying manually constructed featu
 One example of this is the *Viola-Jones-Algorithm* @violaRapidObjectDetection2001a:
 + The algorithm first computes the integral image of the input—a representation where each pixel stores the cumulative sum of intensities from the top-left corner to its position. This allows constant-time calculation of the sum of pixel values within any rectangular region, using only four array references (the corners of the rectangle).
 
-+ It then applies Haar-like features - simple rectangular patterns (e.g., edge, line, or center-surround detectors) - to rapidly identify potential regions of interest. Each feature’s value is derived by subtracting the sum of pixels in one rectangle from the sum in an adjacent rectangle, leveraging the integral image for efficiency.
++ It then applies Haar-like features - simple rectangular patterns (e.g. edge, line, or center-surround detectors) - to rapidly identify potential regions of interest. Each feature’s value is derived by subtracting the sum of pixels in one rectangle from the sum in an adjacent rectangle, leveraging the integral image for efficiency.
 
 + A strong classifier is constructed by training a series of weak classifiers (typically decision stumps) using #acr("AdaBoost"). These weak classifiers focus on individual Haar-like features, while the cascaded structure enables early rejection of non-object windows, significantly reducing computation.
 
@@ -202,6 +202,40 @@ It becomes apparent that introducing residual layers and identity shortcuts help
 
 When the input and output dimensions of a residual layer do not match, a linear projection is used to match the dimensions of the input and output before adding the two together. This linear projection is typically implemented using a 1x1 convolutional layer @heDeepResidualLearning2015. Even though this practice introduces additional parameters that need to be learned and makes the identity shortcut actually not an identity function anymore, it is still beneficial to the training process, as the residual function can be used to significantly increase the network's depth while preserving the gradient flow.
 
+=== Momentum to achieve more stable convergence behavior <momentum>
+
+Momentum in gradient descent optimization acts as a memory mechanism that accumulates a moving average of past gradients, enabling the optimizer to build velocity in directions of consistent gradient flow while reducing oscillations in high-curvature regions of the loss landscape. The momentum update rule modifies the standard gradient descent by maintaining a velocity vector $v_t$ that combines the current gradient with previous momentum, as shown in @momentum-eqn. @nakerstGradientDescentMomentum2020 @sutskeverImportanceInitializationMomentum
+
+$
+v_t &= beta dot v_(t-1) + (1 - beta) dot nabla L(theta_(t-1))\
+theta_t &= theta_(t-1) - eta dot v_t
+$<momentum-eqn>
+
+Where $beta$ represents the momentum coefficient (typically 0.9), $eta$ is the learning rate, $nabla L(theta_(t-1))$ is the gradient of the loss function with respect to parameters $theta$ at time step $t-1$, and $v_t$ is the velocity vector at time $t$. This formulation enables the optimizer to continue moving in directions where gradients consistently point, leading to faster convergence and improved stability during training. @nakerstGradientDescentMomentum2020 @sutskeverImportanceInitializationMomentum
+
+=== Weight Decay to prevent overfitting <weight-decay>
+
+Weight decay is a regularization technique that prevents overfitting by adding an L2 penalty term to the loss function that discourages large parameter values. This technique helps the model generalize better to unseen data by constraining the complexity of learned representations. The regularized loss function combines the original loss with an L2 norm penalty on the parameters, as shown in @l2-loss-eqn. @yunWeightDecayScheduling2020
+
+$
+L_"regularized"(theta) = L_"original"(theta) + frac(lambda, 2) ||theta||_2^2
+$<l2-loss-eqn>
+
+Where $L_"original"(theta)$ is the standard loss function, $lambda$ is the weight decay coefficient, and $||theta||_2^2 = sum_i theta_i^2$ represents the L2 norm of the parameter vector (tensor). Taking the gradient of this regularized loss function with respect to the parameters yields:
+
+$
+nabla L_"regularized"(theta) = nabla L_"original"(theta) + lambda dot theta
+$<l2-gradient-eqn>
+
+This derivative demonstrates that the L2 regularization adds a term proportional to the parameters themselves to the gradient. Substituting this regularized gradient into the standard gradient descent update rule produces the weight decay update formula shown in @weight-decay-eqn:
+
+$
+theta_t = theta_(t-1) - eta dot (nabla L_"original"(theta_(t-1)) + lambda dot theta_(t-1))
+$<weight-decay-eqn>
+
+Where $eta$ is the learning rate and $theta_t$ are the updated parameters at time $t$. The weight decay term $lambda dot theta_(t-1)$ effectively shrinks the parameters toward zero at each update step at a step size proportional to their current magnitude. This creates a "drag" effect, preventing any single parameter from becoming too large and dominating the model's predictions. This regularization is particularly important when training on limited datasets, as it reduces the model's tendency to memorize training examples through large weights reacting heavily to known data points and improves generalization to new data. @yunWeightDecayScheduling2020 @smithDisciplinedApproachNeural2018 
+
+
 == Computational Overhead Reduction Techniques <computational-overhead>
 
 Training deep neural networks for object detection tasks presents significant computational challenges, particularly when evaluating multiple model variants across diverse datasets. Modern deep learning frameworks and hardware architectures provide several optimization techniques that can substantially reduce training time and memory requirements while maintaining model performance. This section examines the key computational optimization strategies employed in this work, focusing on their theoretical foundations and practical applications to thermal image processing workflows.
@@ -210,9 +244,9 @@ Training deep neural networks for object detection tasks presents significant co
 
 #acrf("MPT") is a computational optimization technique that addresses the memory and computational constraints encountered during deep neural network training. This approach leverages the reduced precision arithmetic capabilities of modern hardware accelerators while maintaining the numerical stability required for effective model convergence @micikeviciusMixedPrecisionTraining2018.
 
-The fundamental principle behind #acr("MPT") involves utilizing lower-precision floating-point representations (#acr("FP16")) for the majority of training operations while preserving higher-precision (#acr("FP32")) calculations for operations that require numerical stability. This selective precision approach enables significant reductions in memory usage (typically 50% or more) and computational time while maintaining training effectiveness equivalent to full-precision training. @micikeviciusMixedPrecisionTraining2018
+The fundamental principle behind #acr("MPT") involves utilizing lower-precision #acr("FP16") representations for the majority of training operations while preserving higher-precision #acr("FP32") calculations for operations that require numerical stability. This selective precision approach enables significant reductions in memory usage (typically 50% or more) and computational time while maintaining training effectiveness equivalent to full-precision training. @micikeviciusMixedPrecisionTraining2018
 
-During mixed-precision training, the forward pass and gradient computation operations are performed using #acr("FP16") precision to maximize memory efficiency and computational throughput. However, the model weights are maintained in #acr("FP32") precision, and gradient updates are applied to these full-precision parameters. This ensures that small gradient values are not lost due to the limited dynamic range of #acr("FP16") representation (approximately $6.1 times 10^(-5)$ to $6.55 times 10^4$).
+During mixed-precision training, the forward pass and gradient computation operations are performed using #acr("FP16") precision to maximize memory efficiency and computational throughput. However, the model weights are maintained in #acr("FP32") precision, and gradient updates, although computed based on half-precision inference results, are applied to these full-precision parameters. 
 
 To address potential gradient underflow issues that can arise from the limited dynamic range of #acr("FP16"), gradient scaling techniques are employed. The loss function is multiplied by a scaling factor before backpropagation, effectively shifting small gradient values into the representable range of #acr("FP16"). After gradient computation, the gradients are unscaled before applying updates to the #acr("FP32") model weights @micikeviciusMixedPrecisionTraining2018.
 
@@ -220,11 +254,11 @@ The implementation of #acr("MPT") is particularly beneficial for large-scale tra
 
 === #acrf("JIT") Compilation and Graph Optimization <jit-theory>
 
-#acrf("JIT") compilation represents a runtime optimization strategy that transforms computational graphs and Python code into optimized machine code during execution, rather than relying solely on interpreted execution. This approach addresses the inherent performance overhead of dynamic programming languages like Python, which traditionally suffer from interpretation bottlenecks during intensive computational workloads. @anselPyTorch2Faster2024 @PyTorch2x.
+#acrf("JIT") compilation represents a runtime optimization strategy that transforms computational graphs and Python code into optimized machine code during execution, rather than relying solely on interpreted execution. This approach addresses the inherent performance overhead of dynamic programming languages like Python, which traditionally suffer from interpretation bottlenecks during intensive computational workloads. @anselPyTorch2Faster2024 @PyTorch2x
 
 The fundamental principle of #acr("JIT") compilation involves analyzing the computational patterns during initial execution runs and generating optimized compiled code for subsequent iterations. This process eliminates Python overhead, optimizes memory access patterns, and enables hardware-specific optimizations that can significantly accelerate training throughput. Modern deep learning frameworks implement #acr("JIT") compilation through graph compilation strategies that analyze the computational graph structure and apply fusion operations, kernel optimization, and memory layout improvements. @anselPyTorch2Faster2024
 
-In PyTorch, #acr("JIT") compilation is implemented through TorchScript and the `torch.compile` function, which can provide substantial speedups for models with repetitive computational patterns. The compilation process involves tracing or scripting the model's forward pass to create an optimized representation of the forwards graph, which can optionally be used to also create a backwards graph for gradient computation. @anselPyTorch2Faster2024
+In PyTorch, #acr("JIT") compilation is implemented through TorchScript and the `torch.compile` function, which can provide substantial speedups for models with repetitive computational patterns. The compilation process involves tracing or scripting the model's forward pass to create an optimized representation of the forwards graph, which can optionally be used to also create a backwards graph for gradient computation. This can be achieved by using the `aot_eager` backend for compilation, which uses AOTAutograd (Ahead-Of-Time Autodifferentiation) wherever it is possible to do so or inserts graph breaks for non-differentiable operations. @anselPyTorch2Faster2024
 
 Specifically using PyTorch's `aot_eager` backend for compilation means additionally creating a backwards graph for gradient computation ahead-of-time as soon as the forwards graph has been generated using the AOTAutograd graph analysis and generation engine. @anselPyTorch2Faster2024
 
@@ -604,7 +638,7 @@ The *M3FD* @liuTargetawareDualAdversarial2022 dataset is originally intended to 
   ),
 )<dataset-split-table>
 
-This multi-dataset approach creates a comprehensive compound training dataset that addresses the fundamental challenge of thermal domain adaptation for human detection models originally designed for RGB imagery. The combination ensures robust evaluation across varying thermal polarities (human-hot and human-cool scenarios), environmental temperature conditions (day/night thermal crossover points), subject distances (far-field sports surveillance and  near-field automotive detection), and thermal contrast scenarios (high-contrast winter conditions and challenging summer thermal equilibrium) @hudaEffectDiverseDataset2020, @hwangMultispectralPedestrianDetection2015 @liuTargetawareDualAdversarial2022. Additionally, the ratio between the different splits closely resembles the standard 60%/20%/20% distribution that is often utilized for computer vision applications.
+This multi-dataset approach creates a comprehensive compound training dataset that addresses the fundamental challenge of thermal domain adaptation for human detection models originally designed for RGB imagery. The combination ensures robust evaluation across varying thermal polarities (human-hot and human-cool scenarios), environmental temperature conditions (day/night thermal crossover points), subject distances (far-field sports surveillance and  near-field automotive detection), and thermal contrast scenarios (high-contrast winter conditions and challenging summer thermal equilibrium) @hudaEffectDiverseDataset2020, @hwangMultispectralPedestrianDetection2015 @liuTargetawareDualAdversarial2022. Additionally, the ratio between the different splits closely resembles the standard 60%/20%/20% distribution that is often utilized for computer vision applications. 
 
 *TODO: split source*
 
@@ -750,9 +784,7 @@ The batch size of 64 provides adequate gradient estimation while remaining withi
 
 === Learning Rate Scheduling and Optimization
 
-The optimization strategy employs #acr("SGD") with momentum, incorporating differential learning rates for bias parameters to improve convergence behavior. Bias parameters receive twice the base learning rate ($2 times 10^(-4)$), following established practices that recognize the different optimization dynamics of bias terms compared to weight matrices.
-
-Learning rate scheduling follows a step decay strategy with reductions at epochs 8 and 12, where the learning rate is multiplied by 0.1. This schedule allows the model to make rapid initial progress during early training while enabling fine-tuning in later epochs. The specific scheduling points were chosen based on empirical observation of loss plateaus during preliminary experiments.
+The optimization strategy employs #acr("SGD") with momentum, incorporating differential learning rates for bias parameters to improve convergence behavior. Bias parameters are assigned twice the base learning rate ($2 times 10^(-4)$), an empirical adjustment found to improve training stability in preliminary experiments.
 
 Weight decay regularization ($5 times 10^(-4)$) prevents overfitting by penalizing large parameter values, particularly important given the relatively limited thermal training data compared to standard #acr("RGB") datasets. The momentum coefficient of 0.9 provides acceleration through consistent gradient directions while damping oscillations in parameter updates.
 
